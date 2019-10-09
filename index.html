@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>Cave Excape Game</title>
+  </head>
+  <body onload="init();">
+    <h1>Cave Escape!</h1>
+    <div id="gameport"></div>
+
+    <h1>Instructions</h1>
+    <p>Tap (D) slowly to jump forward and Tap (A) to jump backwards. Avoid the lava and flaming skulls if you can. 
+	Try to make it all the way to the end to escape the cave.</p>
+	
+	<div id = "disqus_thread"></div>
+	
+	<script>
+	(function() {
+		var d = document, s = d.createElement('script');
+		s.src = 'https://nau-cs413.disqus.com/embed.js';
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+	})();
+	</script>
+	
+    <script src="pixi.js"></script>
+    <script src="game.js"></script>
+    <script src="tweenjs.min.js"></script>
+  </body>
+</html>
