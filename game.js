@@ -112,6 +112,7 @@ function generateLevel() {
 	game_stage.addChild( player );
 	
 	// Set up enemies
+   //if(big_skull_a != null)
 	big_skull_a = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
 	big_skull_a.anchor.x = 0.5;
 	big_skull_a.anchor.y = 0.5;
@@ -120,6 +121,7 @@ function generateLevel() {
 	skull_a.position.y = ground_level - tile_size;
 	skull_a.pivot.x = 50;
 	skull_a.pivot.y = 50;
+   skull_a.rotation = 0;
 	skull_a.addChild( big_skull_a );
 	game_stage.addChild( skull_a );
 
@@ -131,6 +133,7 @@ function generateLevel() {
 	skull_b.position.y = ground_level - tile_size;
 	skull_b.pivot.x = 50;
 	skull_b.pivot.y = 50;
+   skull_b.rotation = 0;
 	skull_b.addChild( big_skull_b );
 	game_stage.addChild( skull_b );
 
@@ -142,6 +145,7 @@ function generateLevel() {
 	skull_c.position.y = ground_level - tile_size;
 	skull_c.pivot.x = 50;
 	skull_c.pivot.y = 50;
+   skull_c.rotation = 0;
 	skull_c.addChild( big_skull_c );
 	game_stage.addChild( skull_c );
 	
@@ -411,7 +415,7 @@ function createTile (x, y, size, sprite ) {
 }
 
 function clearStage () {
-   
+   /*
    skull_a.removeChildren();
    skull_b.removeChildren();
    skull_c.removeChildren();
@@ -422,6 +426,18 @@ function clearStage () {
    back.removeChildren();
    game_stage.removeChildren();
    master_stage.removeChildren();
+   */
+   for (var i = skull_a.children.length - 1; i >= 0; i--) { skull_a.removeChild(skull_a.children[i]);};
+   for (var i = skull_b.children.length - 1; i >= 0; i--) { skull_b.removeChild(skull_b.children[i]);};
+   for (var i = skull_c.children.length - 1; i >= 0; i--) { skull_c.removeChild(skull_c.children[i]);};
+   for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
+   for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
+   for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
+   for (var i = endScreen.children.length - 1; i >= 0; i--) { endScreen.removeChild(endScreen.children[i]);};
+   for (var i = back.children.length - 1; i >= 0; i--) { back.removeChild(back.children[i]);};
+   for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
+   for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
+   delete master_stage;
    /*
    for ( var position = 0; position < game_stage.children.length - 1; position++ )
    {
