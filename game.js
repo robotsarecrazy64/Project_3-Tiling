@@ -113,11 +113,11 @@ function generateLevel() {
 	game_stage.addChild( player );
 	
 	// Set up enemies
-        big_skull_a = createSkull( skull_a, end_of_map/4 );
+  big_skull_a = createSkull( skull_a, end_of_map/4 );
 	big_skull_b = createSkull( skull_b, end_of_map/2 );
 	big_skull_c = createSkull ( skull_c, ( 3 * end_of_map ) / 4 );
 	
-        master_stage.addChild( game_stage );
+  master_stage.addChild( game_stage );
 	buildScreens();
 	
 	update();
@@ -174,7 +174,7 @@ function update() {
 	renderer.render( master_stage );
 	requestAnimationFrame( update );
    
-   if( game_active )
+if( game_active )
    { document.addEventListener( 'keydown', keydownEventHandler ); }
    else 
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
@@ -235,7 +235,7 @@ function addEnemy( image ) {
 */
 function checkWinCondition () {
 	if( player.x >= goal.x ) {
-		winner = true;
+    winner = true;
 		endScreen.visible = true;
 		game_active = false;
 	}
