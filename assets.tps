@@ -181,21 +181,8 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">spritesheet_assets/Player.png</key>
-            <key type="filename">spritesheet_assets/big_flaming_skull.png</key>
-            <key type="filename">spritesheet_assets/door.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>13,13,25,25</rect>
-                <key>scale9Paddings</key>
-                <rect>13,13,25,25</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
+            <key type="filename">spritesheet_assets/bat1.png</key>
+            <key type="filename">spritesheet_assets/bat2.png</key>
             <key type="filename">spritesheet_assets/cave_background.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -206,6 +193,22 @@
                 <rect>25,25,50,50</rect>
                 <key>scale9Paddings</key>
                 <rect>25,25,50,50</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">spritesheet_assets/big_flaming_skull.png</key>
+            <key type="filename">spritesheet_assets/door.png</key>
+            <key type="filename">spritesheet_assets/player1.png</key>
+            <key type="filename">spritesheet_assets/player2.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>13,13,25,25</rect>
+                <key>scale9Paddings</key>
+                <rect>13,13,25,25</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -239,13 +242,16 @@
         </map>
         <key>fileList</key>
         <array>
-            <filename>spritesheet_assets/lava.png</filename>
-            <filename>spritesheet_assets/Player.png</filename>
+            <filename>spritesheet_assets/player1.png</filename>
+            <filename>spritesheet_assets/player2.png</filename>
+            <filename>spritesheet_assets/bat1.png</filename>
+            <filename>spritesheet_assets/bat2.png</filename>
             <filename>spritesheet_assets/big_flaming_skull.png</filename>
             <filename>spritesheet_assets/cave_background.png</filename>
             <filename>spritesheet_assets/door.png</filename>
             <filename>spritesheet_assets/flaming_skull.png</filename>
             <filename>spritesheet_assets/ground.png</filename>
+            <filename>spritesheet_assets/lava.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
