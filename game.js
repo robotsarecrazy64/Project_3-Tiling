@@ -315,9 +315,7 @@ function update() {
 	renderer.render( master_stage );
 	requestAnimationFrame( update );
    
-   if( endScreen.visible == false )
-   { document.addEventListener( 'keydown', keydownEventHandler ); }
-   else 
+   if( endScreen.visible == true )
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
 }
 
