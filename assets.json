@@ -1,8 +1,24 @@
 {"frames": {
 
+"bat1.png":
+{
+	"frame": {"x":0,"y":325,"w":100,"h":100},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
+	"sourceSize": {"w":100,"h":100}
+},
+"bat2.png":
+{
+	"frame": {"x":0,"y":225,"w":100,"h":100},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
+	"sourceSize": {"w":100,"h":100}
+},
 "big_flaming_skull.png":
 {
-	"frame": {"x":50,"y":25,"w":50,"h":50},
+	"frame": {"x":0,"y":75,"w":50,"h":50},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":50},
@@ -18,7 +34,7 @@
 },
 "door.png":
 {
-	"frame": {"x":0,"y":25,"w":50,"h":50},
+	"frame": {"x":50,"y":75,"w":50,"h":50},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":50},
@@ -48,9 +64,17 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":25},
 	"sourceSize": {"w":50,"h":25}
 },
-"Player.png":
+"player1.png":
 {
-	"frame": {"x":0,"y":75,"w":50,"h":50},
+	"frame": {"x":0,"y":25,"w":50,"h":50},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":50},
+	"sourceSize": {"w":50,"h":50}
+},
+"player2.png":
+{
+	"frame": {"x":50,"y":25,"w":50,"h":50},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":50,"h":50},
@@ -61,8 +85,8 @@
 	"version": "1.0",
 	"image": "assets.png",
 	"format": "RGBA8888",
-	"size": {"w":100,"h":225},
+	"size": {"w":100,"h":425},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:e85e0f071de6725b3c8ec1e581b48de0:d63cf9a5048f115433c950c744183f65:a759b6bbc8381ac9c472b28f589ad0d6$"
+	"smartupdate": "$TexturePacker:SmartUpdate:4172fb2d79f74456acedcac26d9af4db:3f5cbec4320bed280859a913248b09e4:a759b6bbc8381ac9c472b28f589ad0d6$"
 }
 }

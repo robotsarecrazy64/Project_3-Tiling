@@ -32,6 +32,7 @@ var goal;
 var big_skull_a;
 var big_skull_b;
 var big_skull_c;
+var game_active = false;
 
 // Variables to improve readability
 var ground_level = 423;
@@ -106,54 +107,172 @@ function generateLevel() {
 
 
 	// Set up Player
-	player = createSprite( 0, ground_level, 1, 1, "Player.png");
+	player = createSprite( 0, ground_level, 1, 1, "player1.png");
 	player.interactive = true;
 	document.addEventListener( 'keydown', keydownEventHandler );
 	game_stage.addChild( player );
 	
 	// Set up enemies
-   //if(big_skull_a != null)
-	big_skull_a = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
-	big_skull_a.anchor.x = 0.5;
-	big_skull_a.anchor.y = 0.5;
-	big_skull_a.interactive = true;
-	skull_a.position.x = end_of_map/4;
-	skull_a.position.y = ground_level - tile_size;
-	skull_a.pivot.x = 50;
-	skull_a.pivot.y = 50;
-   skull_a.rotation = 0;
-	skull_a.addChild( big_skull_a );
-	game_stage.addChild( skull_a );
-
-	big_skull_b = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
-	big_skull_b.anchor.x = 0.5;
-	big_skull_b.anchor.y = 0.5;
-	big_skull_b.interactive = true;
-	skull_b.position.x = end_of_map/2;
-	skull_b.position.y = ground_level - tile_size;
-	skull_b.pivot.x = 50;
-	skull_b.pivot.y = 50;
-   skull_b.rotation = 0;
-	skull_b.addChild( big_skull_b );
-	game_stage.addChild( skull_b );
-
-	big_skull_c = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
-	big_skull_c.anchor.x = 0.5;
-	big_skull_c.anchor.y = 0.5;
-	big_skull_c.interactive = true;
-	skull_c.position.x = ( 3 * end_of_map ) / 4;
-	skull_c.position.y = ground_level - tile_size;
-	skull_c.pivot.x = 50;
-	skull_c.pivot.y = 50;
-   skull_c.rotation = 0;
-	skull_c.addChild( big_skull_c );
-	game_stage.addChild( skull_c );
+  big_skull_a = createSkull( skull_a, end_of_map/4 );
+	big_skull_b = createSkull( skull_b, end_of_map/2 );
+	big_skull_c = createSkull ( skull_c, ( 3 * end_of_map ) / 4 );
 	
-	master_stage.addChild( game_stage );
-   master_stage.addChild( startScreen );
-   master_stage.addChild( instructScreen );
-   master_stage.addChild( creditScreen );
-   master_stage.addChild( endScreen );
+  master_stage.addChild( game_stage );
+	buildScreens();
+	
+	update();
+}
+
+/**
+	Creates the enemy sprite
+*/
+function createSkull( stage, position ) {
+	var big_skull = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
+	big_skull.anchor.x = 0.5;
+	big_skull.anchor.y = 0.5;
+	big_skull.interactive = true;
+	stage.position.x = position;
+	stage.position.y = ground_level - tile_size;
+	stage.pivot.x = 50;
+	stage.pivot.y = 50;
+        stage.rotation = 0;
+	stage.addChild( big_skull );
+	game_stage.addChild( stage );
+	return big_skull;
+}
+/**
+	Builds the Floor Tiles Recursively
+*/
+function generateGroundTiles() {
+	offset += tile_size;
+	
+	if ( offset < ( end_of_map - tile_size ) ) {
+		addTile( offset );
+		addEnemy( "flaming_skull.png" );
+		generateGroundTiles();
+	}
+}
+
+/**
+	Update function to animate game assets
+*/
+function update() {
+	// Updates the player status
+	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
+	if ( !winner ) { checkWinCondition(); } // checks for win condition
+	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0; } // allow the game to loop during free play
+	
+	// Rotates the enemies
+	big_skull_a.rotation -= 0.0025;
+	skull_a.rotation += 0.0025;
+	big_skull_b.rotation += 0.0025;
+	skull_b.rotation -= 0.0025;
+	big_skull_c.rotation -= 0.0025;
+	skull_c.rotation += 0.0025;
+
+	// Update renderer
+	renderer.render( master_stage );
+	requestAnimationFrame( update );
+  
+if( game_active )
+   { document.addEventListener( 'keydown', keydownEventHandler ); }
+   else 
+   { document.removeEventListener( 'keydown', keydownEventHandler ); }
+}
+
+/**
+	Helper function that adds a random tile element to the stage
+*/
+function addTile( x ) {
+	var ground_tile = createTile( x, floor_position, tile_size, ground );
+	var lava_tile = createTile( x, floor_position, tile_size, lava );
+	
+	var rand_num = getRand( 5 ); // get a random number (1 or 2)
+	
+	if ( rand_num < 4 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
+	
+	else { game_stage.addChild( lava_tile ); } // adds a lava tile
+}
+
+/**
+	Helper function that returns a random number from 1 to max
+*/
+function getRand( max ) {
+	return Math.floor(( Math.random() * max ) + 1 );
+}
+
+/**
+	Event Handler for Key events
+*/
+function keydownEventHandler(event) {
+	var temp_x = player.position.x;
+	var temp_y = player.position.y;
+
+  	if ( event.keyCode == 68 ) { // D key
+		swapPlayer( temp_x + (tile_size), temp_y, 1, 1, "player1.png"); 
+		if( player.position.x > (end_of_map)) {player.position.x = end_of_map;}
+  	}
+
+  	if ( event.keyCode == 65 ) { // A key
+		swapPlayer( temp_x - (tile_size), temp_y, 1, 1, "player2.png"); 
+		if( player.position.x < 0) {player.position.x = 0;}
+
+  	}
+}
+
+/**
+	Helper function that adds enemies to the stage
+*/
+function addEnemy( image ) {
+	var enemy = createMovieClip( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), .75, .75, "bat", 1, 2 );
+	enemy.anchor.x = 0;
+	enemy.anchor.y = 0;
+	game_stage.addChild( enemy );
+}
+
+/**
+	Checks if the player reached the End Goal
+*/
+function checkWinCondition () {
+	if( player.x >= goal.x ) {
+    winner = true;
+		endScreen.visible = true;
+		game_active = false;
+	}
+}
+
+/**
+	Helper function that swaps the player sprite
+*/
+function swapPlayer ( x, y, scale_x, scale_y, image ) {
+	game_stage.removeChild( player );
+	player = createSprite( x, y, scale_x, scale_y, image );
+	game_stage.addChild( player );
+}
+
+/**
+	Helper function that creates a sprite
+*/
+function createSprite (x, y, scale_x, scale_y, image ) {
+	var sprite = new PIXI.Sprite( PIXI.Texture.from( image ) );
+	sprite.position.x = x;
+	sprite.position.y = y;
+	sprite.scale.x = scale_y;
+	sprite.scale.y = scale_x;
+	return sprite;
+}
+/**
+
+*/
+function createShape() {
+   var graphics = new PIXI.Graphics();
+   graphics.beginFill(0x000000);
+   graphics.drawRect(0, 0, 1000, 500);
+   graphics.endFill();
+   return graphics;
+}
+
+function buildScreens() {
    instructScreen.visible = false;
    creditScreen.visible = false;
    //difficultyScreen.visible = false;
@@ -175,9 +294,9 @@ function generateLevel() {
    var gameReturnTitleText = new PIXI.Text( "Back to title screen", selectionStyle );
    
    // Adds regular text
-   var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the maze and" + 
-      " make it\nto the end! The character is moved using the arrow keys.\n\nMove the character" + 
-      " to the end of the maze to win.", selectionStyle );
+   var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the cave and" + 
+      " make it\nto the end! The character is moved using the A and D keys.\n\nMove the character" + 
+      " to the end of the cave to win.", selectionStyle );
    var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\n\nRenderer used: PixiJS", 
       selectionStyle );
 
@@ -191,7 +310,8 @@ function generateLevel() {
    gameReturnTitleText.interactive = true;
    
    // Declares interactable text functions
-   gameStartText.click = function(event) { startScreen.visible = false; }
+   gameStartText.click = function(event) { startScreen.visible = false;
+					   game_active = true; }
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
    gameCredText.click = function(event) { creditScreen.visible = true;
@@ -201,7 +321,8 @@ function generateLevel() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { endScreen.visible = false; 
-                                             player.position.x = 0; 
+                                             player.position.x = 0;
+					     game_active = true; 
                                              winner = false; 
                                              clearStage();
                                              generateLevel(); }
@@ -210,30 +331,12 @@ function generateLevel() {
                                                  player.position.x = 0; 
                                                  winner = false; }
    
-   // Create backgrounds for screens screen
-   var graphics = new PIXI.Graphics();
-   graphics.beginFill(0x000000);
-   graphics.drawRect(0, 0, 1000, 500);
-   graphics.endFill();
+   // Create background for screens screen
+   var graphics = createShape();
    startScreen.addChild( graphics );
-   
-   var graphics1 = new PIXI.Graphics();
-   graphics1.beginFill(0x000000);
-   graphics1.drawRect(0, 0, 1000, 500);
-   graphics1.endFill();
-   instructScreen.addChild( graphics1 );
-   
-   var graphics2 = new PIXI.Graphics();
-   graphics2.beginFill(0x000000);
-   graphics2.drawRect(0, 0, 1000, 500);
-   graphics2.endFill();
-   creditScreen.addChild( graphics2 );
-   
-   var graphics3 = new PIXI.Graphics();
-   graphics3.beginFill(0x000000);
-   graphics3.drawRect(renderer.width/8, renderer.height/8, renderer.width * .75, renderer.height * .75);
-   graphics3.endFill();
-   endScreen.addChild( graphics3 );
+   instructScreen.addChild( graphics );
+   creditScreen.addChild( graphics );
+   endScreen.addChild( graphics );
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -277,128 +380,11 @@ function generateLevel() {
    gameEndText.x = renderer.width/2; gameEndText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
-	
-	update();
-}
-
-/**
-	Builds the Floor Tiles Recursively
-*/
-function generateGroundTiles() {
-	offset += tile_size;
-	
-	if ( offset < ( end_of_map - tile_size ) ) {
-		addTile( offset );
-		addEnemy( "flaming_skull.png" );
-		generateGroundTiles();
-	}
-}
-
-/**
-	Update function to animate game assets
-*/
-function update() {
-	// Updates the player status
-	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
-	if ( !winner ) { checkWinCondition(); } // checks for win condition
-	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0; } // allow the game to loop during free play
-	
-	// Rotates the enemies
-	big_skull_a.rotation -= 0.0025;
-	skull_a.rotation += 0.0025;
-	big_skull_b.rotation += 0.0025;
-	skull_b.rotation -= 0.0025;
-	big_skull_c.rotation -= 0.0025;
-	skull_c.rotation += 0.0025;
-
-	// Update renderer
-	renderer.render( master_stage );
-	requestAnimationFrame( update );
    
-   if( endScreen.visible == true )
-   { document.removeEventListener( 'keydown', keydownEventHandler ); }
-}
-
-/**
-	Helper function that adds a random tile element to the stage
-*/
-function addTile( x ) {
-	var ground_tile = createTile( x, floor_position, tile_size, ground );
-	var lava_tile = createTile( x, floor_position, tile_size, lava );
-	
-	var rand_num = getRand( 5 ); // get a random number (1 or 2)
-	
-	if ( rand_num < 4 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
-	
-	else { game_stage.addChild( lava_tile ); } // adds a lava tile
-}
-
-/**
-	Helper function that returns a random number from 1 to max
-*/
-function getRand( max ) {
-	return Math.floor(( Math.random() * max ) + 1 );
-}
-
-/**
-	Event Handler for Key events
-*/
-function keydownEventHandler(event) {
-  	if ( event.keyCode == 68 ) { // D key
-		player.position.x += ( tile_size );
-  	}
-
-  	if ( event.keyCode == 65 ) { // A key
-		player.position.x -= ( tile_size );
-  	}
-}
-
-/**
-	Helper function that adds enemies to the stage
-*/
-function addEnemy( image ) {
-	var skull = new createSprite (  getRand( end_of_map ), getRand( ground_level ), 1, 1, image );
-	skull.anchor.x = 0;
-	skull.anchor.y = 0;
-	game_stage.addChild( skull );
-}
-
-/**
-	Checks if the player reached the End Goal
-*/
-function checkWinCondition () {
-	if( player.x >= goal.x ) {
-		
-		if(( count % 2 ) == 0 ) { // prevents excessive alerts
-			winner = true;
-			//alert( "You have successfully escaped the cave! Click OK to keep playing (forever)." );
-         endScreen.visible = true;
-		}
-		
-			
-		count += 1;
-	}
-}
-
-/**
-	Helper function that swaps the player sprite
-*/
-function swapPlayer ( x, y, scale_x, scale_y, image ) {
-	game_stage.removeChild( player );
-	player = createSprite( x, y, scale_x, scale_y, image );
-	game_stage.addChild( player );
-}
-
-/**
-	Helper function that creates a sprite
-*/
-function createSprite (x, y, scale_x, scale_y, image ) {
-	var sprite = new PIXI.Sprite( PIXI.Texture.from( image ) );
-	sprite.position.x = x;
-	sprite.position.y = y;
-	sprite.scale.x = scale_y;
-	sprite.scale.y = scale_x;
-	return sprite;
+   master_stage.addChild( startScreen );
+   master_stage.addChild( instructScreen );
+   master_stage.addChild( creditScreen );
+   master_stage.addChild( endScreen );
 }
 
 /**
@@ -412,19 +398,10 @@ function createTile (x, y, size, sprite ) {
 	return tile;
 }
 
+/**
+	Helper function that clears the stage
+*/
 function clearStage () {
-   /*
-   skull_a.removeChildren();
-   skull_b.removeChildren();
-   skull_c.removeChildren();
-   startScreen.removeChildren();
-   instructScreen.removeChildren();
-   creditScreen.removeChildren();
-   endScreen.removeChildren();
-   back.removeChildren();
-   game_stage.removeChildren();
-   master_stage.removeChildren();
-   */
    for (var i = skull_a.children.length - 1; i >= 0; i--) { skull_a.removeChild(skull_a.children[i]);};
    for (var i = skull_b.children.length - 1; i >= 0; i--) { skull_b.removeChild(skull_b.children[i]);};
    for (var i = skull_c.children.length - 1; i >= 0; i--) { skull_c.removeChild(skull_c.children[i]);};
@@ -436,15 +413,25 @@ function clearStage () {
    for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
    for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
    delete master_stage;
-   /*
-   for ( var position = 0; position < game_stage.children.length - 1; position++ )
-   {
-      delete game_stage.children[position];
-   }
-   ///*
-   for ( var position = 0; position < master_stage.children.length - 1; position++ )
-   {
-      master_stage.removeChild( master_stage.children[position] );
-   }
-   */
+}
+
+
+
+/**
+	Helper function that returns a movie clip
+*/
+function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
+	var clips = [];
+	for ( var i = low; i <= high; i++ ) {
+    		clips.push( PIXI.Texture.fromFrame( image + i + '.png' ) );
+  	}
+	
+	var movie_clip = new PIXI.extras.AnimatedSprite( clips );
+	movie_clip.scale.x = scale_x;
+	movie_clip.scale.y = scale_y;
+	movie_clip.position.x = x;
+	movie_clip.position.y = y;
+	movie_clip.animationSpeed = 0.1;
+	movie_clip.play();	
+  	return movie_clip;
 }
