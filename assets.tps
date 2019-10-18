@@ -196,8 +196,9 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">spritesheet_assets/big_flaming_skull.png</key>
             <key type="filename">spritesheet_assets/door.png</key>
+            <key type="filename">spritesheet_assets/laughing_skull1.png</key>
+            <key type="filename">spritesheet_assets/laughing_skull2.png</key>
             <key type="filename">spritesheet_assets/player1.png</key>
             <key type="filename">spritesheet_assets/player2.png</key>
             <struct type="IndividualSpriteSettings">
@@ -242,16 +243,17 @@
         </map>
         <key>fileList</key>
         <array>
-            <filename>spritesheet_assets/player1.png</filename>
-            <filename>spritesheet_assets/player2.png</filename>
-            <filename>spritesheet_assets/bat1.png</filename>
-            <filename>spritesheet_assets/bat2.png</filename>
-            <filename>spritesheet_assets/big_flaming_skull.png</filename>
             <filename>spritesheet_assets/cave_background.png</filename>
             <filename>spritesheet_assets/door.png</filename>
             <filename>spritesheet_assets/flaming_skull.png</filename>
             <filename>spritesheet_assets/ground.png</filename>
+            <filename>spritesheet_assets/laughing_skull1.png</filename>
+            <filename>spritesheet_assets/laughing_skull2.png</filename>
             <filename>spritesheet_assets/lava.png</filename>
+            <filename>spritesheet_assets/player1.png</filename>
+            <filename>spritesheet_assets/player2.png</filename>
+            <filename>spritesheet_assets/bat1.png</filename>
+            <filename>spritesheet_assets/bat2.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
