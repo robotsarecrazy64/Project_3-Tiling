@@ -175,10 +175,10 @@ function update() {
 	// Update renderer
 	renderer.render( master_stage );
 	requestAnimationFrame( update );
-   
-   if( game_active )
-   { document.addEventListener( 'keydown', keydownEventHandler ); }
-   else 
+if( game_active ){ 
+   document.addEventListener( 'keydown', keydownEventHandler );
+}
+else 
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
 }
 
