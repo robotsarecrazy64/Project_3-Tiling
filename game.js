@@ -5,7 +5,6 @@ gameport.appendChild( renderer.view );
 
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
-// Loads the assets from the sprite sheet
 PIXI.Loader.shared
   .add( "assets.json" )
   .load( generateLevel );
@@ -24,6 +23,7 @@ var skull_c = new PIXI.Container();
 var game_stage = new PIXI.Container();
 
 // Assets
+var world;
 var cave;
 var ground;
 var lava;
@@ -33,6 +33,11 @@ var big_skull_a;
 var big_skull_b;
 var big_skull_c;
 var game_active = false;
+var GAME_WIDTH = renderer.width;
+var GAME_HEIGHT = renderer.height;
+var GAME_SCALE = 1;
+master_stage.scale.x = GAME_SCALE;
+master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
@@ -77,8 +82,7 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 function generateLevel() {
 	clearStage ();
 	current_level++;
-	offset = 0; // enables the game to loop without issues
-	
+	offset = 0; 	
 	// Set up Background
 	cave = createSprite( 0, 0, 1, 1, "cave_background.png");
 	back.scale.x = end_of_map/100;
@@ -92,12 +96,12 @@ function generateLevel() {
 	lava = new PIXI.Texture.from( "lava.png" );
 	
 
-	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); // ensures start tile is not a lava tile
+	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	start_tile.position.x = 0;
 	start_tile.position.y = floor_position;
 	start_tile.tilePosition.x = 0;
 	start_tile.tilePosition.y = 0;
-	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); // ensures end tile is not a lava tile
+	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	end_tile.position.x = end_of_map - tile_size;
 	end_tile.position.y = floor_position;	game_stage.addChild( start_tile );
 	generateGroundTiles();
@@ -159,7 +163,9 @@ function generateGroundTiles() {
 	Update function to animate game assets
 */
 function update() {
-	// Updates the player status
+ if( game_active )
+   { document.addEventListener( 'keydown', keydownEventHandler );
+      // Updates the player status
 	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0; } // allow the game to loop during free play
@@ -171,15 +177,13 @@ function update() {
 	skull_b.rotation -= 0.025;
 	big_skull_c.rotation -= 0.025;
 	skull_c.rotation += 0.025;
-
-	// Update renderer
-	renderer.render( master_stage );
-	requestAnimationFrame( update );
-   
-   if( game_active )
-   { document.addEventListener( 'keydown', keydownEventHandler ); }
+   }
    else 
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
+
+   // Update renderer
+   renderer.render( master_stage );
+   requestAnimationFrame( update );
 }
 
 /**
@@ -441,10 +445,10 @@ function clearStage () {
 function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
 	var clips = [];
 	for ( var i = low; i <= high; i++ ) {
-    		clips.push( PIXI.Texture.fromFrame( image + i + '.png' ) );
+    		clips.push( PIXI.Texture.from( image + i + '.png' ) );
   	}
 	
-	var movie_clip = new PIXI.extras.AnimatedSprite( clips );
+	var movie_clip = new PIXI.AnimatedSprite( clips );
 	movie_clip.scale.x = scale_x;
 	movie_clip.scale.y = scale_y;
 	movie_clip.position.x = x;
