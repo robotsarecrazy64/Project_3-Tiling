@@ -184,7 +184,7 @@ function update() {
       // Updates the player status
 	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
-	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0; } // allow the game to loop during free play
+	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
 	// Rotates the enemies
 	big_skull_a.rotation -= 0.025;
@@ -265,7 +265,7 @@ function addEnemy() {
 	Checks if the player reached the End Goal
 */
 function checkWinCondition () {
-	if( player.x == goal.x ) {
+	if( player.x >= goal.x ) {
 		winner = true;
 		endScreen.visible = true;
 		game_active = false;
@@ -421,6 +421,7 @@ function buildScreens() {
    master_stage.addChild( instructScreen );
    master_stage.addChild( creditScreen );
    master_stage.addChild( endScreen );
+   endScreen.x = end_goal - 950;
 }
 
 /**
