@@ -41,13 +41,14 @@ master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
-var end_of_map = renderer.width;
+var end_of_map = renderer.width*6;
 var floor_position = 470;
 var tile_size = 50;
 var count = 2;
 var offset = 0;
 var winner = false;
 var current_level = 1;
+var end_goal = end_of_map - 100;
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -84,16 +85,34 @@ function generateLevel() {
 	current_level++;
 	offset = 0; 	
 	// Set up Background
-	cave = createSprite( 0, 0, 1, 1, "cave_background.png");
-	back.scale.x = end_of_map/100;
+	back.scale.x = end_of_map/600;
 	back.scale.y = back.scale.x/2;
-	back.addChild( cave );
+	
+	cave1 = createSprite( 0, 0, 1, 1, "cave_background.png");
+	back.addChild( cave1 );
+	
+	cave2 = createSprite( 99, 0, 1, 1, "cave_background.png");
+	back.addChild( cave2 );
+
+	cave3 = createSprite( 198, 0, 1, 1, "cave_background.png");
+	back.addChild( cave3 );
+
+	cave4 = createSprite( 297, 0, 1, 1, "cave_background.png");
+	back.addChild( cave4 );
+
+	cave5 = createSprite( 396, 0, 1, 1, "cave_background.png");
+	back.addChild( cave5 );
+
+	cave6 = createSprite( 495, 0, 1, 1, "cave_background.png");
+	back.addChild( cave6 );
+
+
 	game_stage.addChild( back );
 
 	// Generate Floor Tiles
-	ground = new PIXI.Texture.from( "ground.png" );
+	ground = new PIXI.Texture.from( "groundtile.png" );
 	
-	lava = new PIXI.Texture.from( "lava.png" );
+	lava = new PIXI.Texture.from( "lavatile.png" );
 	
 
 	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
@@ -102,13 +121,14 @@ function generateLevel() {
 	start_tile.tilePosition.x = 0;
 	start_tile.tilePosition.y = 0;
 	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
-	end_tile.position.x = end_of_map - tile_size;
-	end_tile.position.y = floor_position;	game_stage.addChild( start_tile );
+	end_tile.position.x = end_of_map - ( 2 * tile_size );
+	end_tile.position.y = floor_position;	
+	game_stage.addChild( start_tile );
 	generateGroundTiles();
 	game_stage.addChild( end_tile );
 
 	// Set up End goal
-	goal = createSprite( end_of_map - 40, ground_level, 1, 1, "door.png" );
+	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
 	game_stage.addChild( goal );
 
 
@@ -127,6 +147,12 @@ function generateLevel() {
 	buildScreens();
 	
 	update();
+}
+
+function buildBackground() {
+	
+	cave = createSprite( player.position.x, 0, 1, 1, "cave_background.png");
+	back.addChild( cave );
 }
 
 /**
@@ -152,11 +178,12 @@ function createSkull( stage, position ) {
 function generateGroundTiles() {
 	offset += tile_size;
 	
-	if ( offset < ( end_of_map - tile_size ) ) {
+	if ( offset < ( end_of_map - (2*tile_size ) ) ) {
 		addTile( offset );
 		addEnemy();
 		generateGroundTiles();
 	}
+
 }
 
 /**
@@ -177,8 +204,11 @@ function update() {
 	skull_b.rotation -= 0.025;
 	big_skull_c.rotation -= 0.025;
 	skull_c.rotation += 0.025;
+	
+	updateCamera();
    }
-   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
+   else 
+   { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
    // Update renderer
    renderer.render( master_stage );
@@ -246,17 +276,14 @@ function addEnemy() {
 	Checks if the player reached the End Goal
 */
 function checkWinCondition () {
-	if( player.x > goal.x ) {
-		if ( current_level == 6 ) {
-			winner = true;
-			endScreen.visible = true;
-			game_active = false;
-		}
-		
-		else {
-			generateLevel();
-		}
+	if( player.x >= goal.x ) {
+		winner = true;
+		endScreen.visible = true;
+		game_active = false;
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 	}
+
+
 }
 
 /**
@@ -286,7 +313,7 @@ function createSprite (x, y, scale_x, scale_y, image ) {
 */
 function createShape() {
    var graphics = new PIXI.Graphics();
-   graphics.beginFill(0x000000);
+   graphics.beginFill('0x000000');
    graphics.drawRect(0, 0, 1000, 500);
    graphics.endFill();
    return graphics;
@@ -357,7 +384,7 @@ function buildScreens() {
    startScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
-   endScreen.addChild( graphics );
+   endScreen.addChild( createShape() );
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -457,3 +484,7 @@ function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
   	return movie_clip;
 }
 
+function updateCamera() {
+	if ( player.position.x < ( end_of_map - ( 1000 ) ) ) { master_stage.x = -player.position.x; }
+	
+}
