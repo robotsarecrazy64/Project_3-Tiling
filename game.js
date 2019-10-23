@@ -5,7 +5,6 @@ gameport.appendChild( renderer.view );
 
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
-// Loads the assets from the sprite sheet
 PIXI.Loader.shared
   .add( "assets.json" )
   .load( generateLevel );
@@ -24,6 +23,7 @@ var skull_c = new PIXI.Container();
 var game_stage = new PIXI.Container();
 
 // Assets
+var world;
 var cave;
 var ground;
 var lava;
@@ -33,15 +33,23 @@ var big_skull_a;
 var big_skull_b;
 var big_skull_c;
 var game_active = false;
+var GAME_WIDTH = renderer.width;
+var GAME_HEIGHT = renderer.height;
+var GAME_SCALE = 1;
+master_stage.scale.x = GAME_SCALE;
+master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
-var end_of_map = renderer.width;
+var end_of_map = renderer.width*6;
 var floor_position = 470;
 var tile_size = 50;
 var count = 2;
 var offset = 0;
 var winner = false;
+var current_level = 1;
+var end_goal = end_of_map - 100;
+var back_space = 99;
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -75,34 +83,35 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 */
 function generateLevel() {
 	clearStage ();
-	offset = 0; // enables the game to loop without issues
-	
+	current_level++;
+	offset = 0; 	
 	// Set up Background
-	cave = createSprite( 0, 0, 1, 1, "cave_background.png");
-	back.scale.x = end_of_map/100;
+	back.scale.x = end_of_map/600;
 	back.scale.y = back.scale.x/2;
-	back.addChild( cave );
+	
+	generateBackground();
 	game_stage.addChild( back );
 
 	// Generate Floor Tiles
-	ground = new PIXI.Texture.from( "ground.png" );
+	ground = new PIXI.Texture.from( "groundtile.png" );
 	
-	lava = new PIXI.Texture.from( "lava.png" );
+	lava = new PIXI.Texture.from( "lavatile.png" );
 	
 
-	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); // ensures start tile is not a lava tile
+	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	start_tile.position.x = 0;
 	start_tile.position.y = floor_position;
 	start_tile.tilePosition.x = 0;
 	start_tile.tilePosition.y = 0;
-	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); // ensures end tile is not a lava tile
-	end_tile.position.x = end_of_map - tile_size;
-	end_tile.position.y = floor_position;	game_stage.addChild( start_tile );
+	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
+	end_tile.position.x = end_of_map - ( 2 * tile_size );
+	end_tile.position.y = floor_position;	
+	game_stage.addChild( start_tile );
 	generateGroundTiles();
 	game_stage.addChild( end_tile );
 
 	// Set up End goal
-	goal = createSprite( end_of_map - tile_size, ground_level, 1, 1, "door.png" );
+	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
 	game_stage.addChild( goal );
 
 
@@ -113,32 +122,44 @@ function generateLevel() {
 	game_stage.addChild( player );
 	
 	// Set up enemies
-  big_skull_a = createSkull( skull_a, end_of_map/4 );
+        big_skull_a = createSkull( skull_a, end_of_map/4 );
 	big_skull_b = createSkull( skull_b, end_of_map/2 );
 	big_skull_c = createSkull ( skull_c, ( 3 * end_of_map ) / 4 );
 	
-  master_stage.addChild( game_stage );
+        master_stage.addChild( game_stage );
 	buildScreens();
 	
 	update();
 }
 
+function buildBackground( x ) {
+	var cave = createSprite( x, 0, 1, 1, "cave_background.png");
+	back.addChild( cave );
+}
+
+function generateBackground() {
+	for ( var back = 0; back < ( ( end_of_map/1000 ) ); back++ ) {
+		buildBackground( 99*back );
+	}
+}
+
+
 /**
 	Creates the enemy sprite
 */
 function createSkull( stage, position ) {
-	var big_skull = createSprite( 0, 0, 1, 1, "big_flaming_skull.png" );
-	big_skull.anchor.x = 0.5;
-	big_skull.anchor.y = 0.5;
-	big_skull.interactive = true;
+	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
+	skull.anchor.x = 0.5;
+	skull.anchor.y = 0.5;
+	skull.interactive = true;
 	stage.position.x = position;
-	stage.position.y = ground_level - tile_size;
-	stage.pivot.x = 50;
-	stage.pivot.y = 50;
+	stage.position.y = ground_level - ((tile_size*3)/2);
+	stage.pivot.x = tile_size;
+	stage.pivot.y = tile_size;
         stage.rotation = 0;
-	stage.addChild( big_skull );
+	stage.addChild( skull );
 	game_stage.addChild( stage );
-	return big_skull;
+	return skull;
 }
 /**
 	Builds the Floor Tiles Recursively
@@ -146,38 +167,41 @@ function createSkull( stage, position ) {
 function generateGroundTiles() {
 	offset += tile_size;
 	
-	if ( offset < ( end_of_map - tile_size ) ) {
+	if ( offset < ( end_of_map - (2*tile_size ) ) ) {
 		addTile( offset );
-		addEnemy( "flaming_skull.png" );
+		addEnemy();
 		generateGroundTiles();
 	}
+
 }
 
 /**
 	Update function to animate game assets
 */
 function update() {
-	// Updates the player status
+ if( game_active )
+   { document.addEventListener( 'keydown', keydownEventHandler );
+      // Updates the player status
 	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0; } // allow the game to loop during free play
 	
 	// Rotates the enemies
-	big_skull_a.rotation -= 0.0025;
-	skull_a.rotation += 0.0025;
-	big_skull_b.rotation += 0.0025;
-	skull_b.rotation -= 0.0025;
-	big_skull_c.rotation -= 0.0025;
-	skull_c.rotation += 0.0025;
-
-	// Update renderer
-	renderer.render( master_stage );
-	requestAnimationFrame( update );
-  
-if( game_active )
-   { document.addEventListener( 'keydown', keydownEventHandler ); }
+	big_skull_a.rotation -= 0.025;
+	skull_a.rotation += 0.025;
+	big_skull_b.rotation += 0.025;
+	skull_b.rotation -= 0.025;
+	big_skull_c.rotation -= 0.025;
+	skull_c.rotation += 0.025;
+	
+	updateCamera();
+   }
    else 
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
+
+   // Update renderer
+   renderer.render( master_stage );
+   requestAnimationFrame( update );
 }
 
 /**
@@ -205,48 +229,59 @@ function getRand( max ) {
 	Event Handler for Key events
 */
 function keydownEventHandler(event) {
-	var temp_x = player.position.x;
-	var temp_y = player.position.y;
-
   	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( temp_x + (tile_size), temp_y, 1, 1, "player1.png"); 
-		if( player.position.x > (end_of_map)) {player.position.x = end_of_map;}
+		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png"); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 
   	if ( event.keyCode == 65 ) { // A key
-		swapPlayer( temp_x - (tile_size), temp_y, 1, 1, "player2.png"); 
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png"); 
 		if( player.position.x < 0) {player.position.x = 0;}
-
   	}
 }
 
 /**
 	Helper function that adds enemies to the stage
 */
-function addEnemy( image ) {
-	var enemy = createMovieClip( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), .75, .75, "bat", 1, 2 );
-	enemy.anchor.x = 0;
-	enemy.anchor.y = 0;
-	game_stage.addChild( enemy );
+function addEnemy() {
+	var bat = createMovieClip( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), .75, .75, "bat", 1, 2 );
+	var tiny_skull = createSprite( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), 1, 1, "flaming_skull.png" );
+	var randomize = getRand( 2 );
+	if ( randomize == 1 ) {
+		bat.anchor.x = 0;
+		bat.anchor.y = 0;
+		game_stage.addChild( bat );
+	}
+	
+	else {
+		tiny_skull.anchor.x = 0;
+		tiny_skull.anchor.y = 0;
+		game_stage.addChild( tiny_skull );
+
+	}
 }
 
 /**
 	Checks if the player reached the End Goal
 */
 function checkWinCondition () {
-	if( player.x >= goal.x ) {
-    winner = true;
+	if( player.x == goal.x ) {
+		winner = true;
 		endScreen.visible = true;
 		game_active = false;
 	}
+
+
 }
 
 /**
 	Helper function that swaps the player sprite
 */
 function swapPlayer ( x, y, scale_x, scale_y, image ) {
+	var temp_x = x;
+	var temp_y = y;
 	game_stage.removeChild( player );
-	player = createSprite( x, y, scale_x, scale_y, image );
+	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
 	game_stage.addChild( player );
 }
 
@@ -266,7 +301,7 @@ function createSprite (x, y, scale_x, scale_y, image ) {
 */
 function createShape() {
    var graphics = new PIXI.Graphics();
-   graphics.beginFill(0x000000);
+   graphics.beginFill('0x000000');
    graphics.drawRect(0, 0, 1000, 500);
    graphics.endFill();
    return graphics;
@@ -321,12 +356,13 @@ function buildScreens() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { endScreen.visible = false; 
+					     current_level = 0;
                                              player.position.x = 0;
 					     game_active = true; 
                                              winner = false; 
-                                             clearStage();
                                              generateLevel(); }
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
+						 current_level = 0;
                                                  endScreen.visible = false; 
                                                  player.position.x = 0; 
                                                  winner = false; }
@@ -423,15 +459,20 @@ function clearStage () {
 function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
 	var clips = [];
 	for ( var i = low; i <= high; i++ ) {
-    		clips.push( PIXI.Texture.fromFrame( image + i + '.png' ) );
+    		clips.push( PIXI.Texture.from( image + i + '.png' ) );
   	}
 	
-	var movie_clip = new PIXI.extras.AnimatedSprite( clips );
+	var movie_clip = new PIXI.AnimatedSprite( clips );
 	movie_clip.scale.x = scale_x;
 	movie_clip.scale.y = scale_y;
 	movie_clip.position.x = x;
 	movie_clip.position.y = y;
-	movie_clip.animationSpeed = 0.1;
-	movie_clip.play();	
+	movie_clip.animationSpeed = 0.075;
+	movie_clip.play();
   	return movie_clip;
+}
+
+function updateCamera() {
+	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
+	
 }
