@@ -178,8 +178,7 @@ function update() {
 	big_skull_c.rotation -= 0.025;
 	skull_c.rotation += 0.025;
    }
-   else 
-   { document.removeEventListener( 'keydown', keydownEventHandler ); }
+   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
    // Update renderer
    renderer.render( master_stage );
