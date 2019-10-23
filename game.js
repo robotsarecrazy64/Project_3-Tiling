@@ -49,6 +49,7 @@ var offset = 0;
 var winner = false;
 var current_level = 1;
 var end_goal = end_of_map - 100;
+var back_space = 99;
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -88,25 +89,7 @@ function generateLevel() {
 	back.scale.x = end_of_map/600;
 	back.scale.y = back.scale.x/2;
 	
-	cave1 = createSprite( 0, 0, 1, 1, "cave_background.png");
-	back.addChild( cave1 );
-	
-	cave2 = createSprite( 99, 0, 1, 1, "cave_background.png");
-	back.addChild( cave2 );
-
-	cave3 = createSprite( 198, 0, 1, 1, "cave_background.png");
-	back.addChild( cave3 );
-
-	cave4 = createSprite( 297, 0, 1, 1, "cave_background.png");
-	back.addChild( cave4 );
-
-	cave5 = createSprite( 396, 0, 1, 1, "cave_background.png");
-	back.addChild( cave5 );
-
-	cave6 = createSprite( 495, 0, 1, 1, "cave_background.png");
-	back.addChild( cave6 );
-
-
+	generateBackground();
 	game_stage.addChild( back );
 
 	// Generate Floor Tiles
@@ -149,11 +132,17 @@ function generateLevel() {
 	update();
 }
 
-function buildBackground() {
-	
-	cave = createSprite( player.position.x, 0, 1, 1, "cave_background.png");
+function buildBackground( x ) {
+	var cave = createSprite( x, 0, 1, 1, "cave_background.png");
 	back.addChild( cave );
 }
+
+function generateBackground() {
+	for ( var back = 0; back < ( ( end_of_map/1000 ) ); back++ ) {
+		buildBackground( 99*back );
+	}
+}
+
 
 /**
 	Creates the enemy sprite
@@ -241,12 +230,12 @@ function getRand( max ) {
 */
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png"); 
-		if( player.position.x > (end_of_map)) {player.position.x = end_of_map;}
+		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png"); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 
   	if ( event.keyCode == 65 ) { // A key
-		swapPlayer( player.position.x - (tile_size), player.position.y, 1, 1, "player2.png"); 
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png"); 
 		if( player.position.x < 0) {player.position.x = 0;}
   	}
 }
@@ -276,11 +265,10 @@ function addEnemy() {
 	Checks if the player reached the End Goal
 */
 function checkWinCondition () {
-	if( player.x >= goal.x ) {
+	if( player.x == goal.x ) {
 		winner = true;
 		endScreen.visible = true;
 		game_active = false;
-		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 	}
 
 
@@ -384,7 +372,7 @@ function buildScreens() {
    startScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
-   endScreen.addChild( createShape() );
+   endScreen.addChild( graphics );
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -485,6 +473,6 @@ function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
 }
 
 function updateCamera() {
-	if ( player.position.x < ( end_of_map - ( 1000 ) ) ) { master_stage.x = -player.position.x; }
+	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
 	
 }
