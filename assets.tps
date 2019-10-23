@@ -183,7 +183,6 @@
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">spritesheet_assets/bat1.png</key>
             <key type="filename">spritesheet_assets/bat2.png</key>
-            <key type="filename">spritesheet_assets/cave_background.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -193,6 +192,19 @@
                 <rect>25,25,50,50</rect>
                 <key>scale9Paddings</key>
                 <rect>25,25,50,50</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">spritesheet_assets/cave_background.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>250,125,500,250</rect>
+                <key>scale9Paddings</key>
+                <rect>250,125,500,250</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -243,9 +255,6 @@
         </map>
         <key>fileList</key>
         <array>
-            <filename>spritesheet_assets/cave_background.png</filename>
-            <filename>spritesheet_assets/door.png</filename>
-            <filename>spritesheet_assets/flaming_skull.png</filename>
             <filename>spritesheet_assets/groundtile.png</filename>
             <filename>spritesheet_assets/laughing_skull1.png</filename>
             <filename>spritesheet_assets/laughing_skull2.png</filename>
@@ -254,6 +263,9 @@
             <filename>spritesheet_assets/player2.png</filename>
             <filename>spritesheet_assets/bat1.png</filename>
             <filename>spritesheet_assets/bat2.png</filename>
+            <filename>spritesheet_assets/cave_background.png</filename>
+            <filename>spritesheet_assets/door.png</filename>
+            <filename>spritesheet_assets/flaming_skull.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

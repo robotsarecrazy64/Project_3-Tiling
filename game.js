@@ -86,8 +86,8 @@ function generateLevel() {
 	current_level++;
 	offset = 0; 	
 	// Set up Background
-	back.scale.x = end_of_map/600;
-	back.scale.y = back.scale.x/2;
+	//back.scale.x = end_of_map/600;
+	//back.scale.y = ;
 	
 	generateBackground();
 	game_stage.addChild( back );
@@ -139,7 +139,7 @@ function buildBackground( x ) {
 
 function generateBackground() {
 	for ( var back = 0; back < ( ( end_of_map/1000 ) ); back++ ) {
-		buildBackground( 99*back );
+		buildBackground( 999*back );
 	}
 }
 
@@ -265,7 +265,7 @@ function addEnemy() {
 	Checks if the player reached the End Goal
 */
 function checkWinCondition () {
-	if( player.x >= goal.x ) {
+	if( player.x > goal.x ) {
 		winner = true;
 		endScreen.visible = true;
 		game_active = false;
