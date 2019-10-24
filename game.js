@@ -332,7 +332,7 @@ function buildScreens() {
    var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the cave and" + 
       " make it\nto the end! The character is moved using the A and D keys.\n\nMove the character" + 
       " to the end of the cave to win.", selectionStyle );
-   var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\n\nRenderer used: PixiJS", 
+   var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\nDarius Dumel\n\nRenderer used: PixiJS", 
       selectionStyle );
 
    // Declare texts interactable
