@@ -356,16 +356,18 @@ function buildScreens() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { endScreen.visible = false; 
-					     current_level = 0;
+                                             current_level = 0;
                                              player.position.x = 0;
-					     game_active = true; 
+                                             game_active = true; 
                                              winner = false; 
                                              generateLevel(); }
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
-						 current_level = 0;
+                                                 current_level = 0;
                                                  endScreen.visible = false; 
                                                  player.position.x = 0; 
-                                                 winner = false; }
+                                                 generateLevel();
+                                                 winner = false; 
+                                                 master_stage.x = 0;}
    
    // Create background for screens screen
    var graphics = createShape();
