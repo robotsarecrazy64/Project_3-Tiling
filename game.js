@@ -17,9 +17,6 @@ var instructScreen = new PIXI.Container();
 var creditScreen = new PIXI.Container();
 var endScreen = new PIXI.Container();
 var back = new PIXI.Container();
-var skull_a = new PIXI.Container();
-var skull_b = new PIXI.Container();
-var skull_c = new PIXI.Container();
 var game_stage = new PIXI.Container();
 
 // Assets
@@ -29,9 +26,9 @@ var ground;
 var lava;
 var player;
 var goal;
-var big_skull_a;
-var big_skull_b;
-var big_skull_c;
+var skulls = [];
+var numOfSkulls = 25;
+const MAX_SKULL_HEIGHT = 200;
 var game_active = false;
 var GAME_WIDTH = renderer.width;
 var GAME_HEIGHT = renderer.height;
@@ -122,9 +119,7 @@ function generateLevel() {
 	game_stage.addChild( player );
 	
 	// Set up enemies
-        big_skull_a = createSkull( skull_a, end_of_map/4 );
-	big_skull_b = createSkull( skull_b, end_of_map/2 );
-	big_skull_c = createSkull ( skull_c, ( 3 * end_of_map ) / 4 );
+	createSkulls(numOfSkulls);
 	
         master_stage.addChild( game_stage );
 	buildScreens();
@@ -145,22 +140,62 @@ function generateBackground() {
 
 
 /**
-	Creates the enemy sprite
-*/
-function createSkull( stage, position ) {
-	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
-	skull.anchor.x = 0.5;
-	skull.anchor.y = 0.5;
-	skull.interactive = true;
-	stage.position.x = position;
-	stage.position.y = ground_level - ((tile_size*3)/2);
-	stage.pivot.x = tile_size;
-	stage.pivot.y = tile_size;
-        stage.rotation = 0;
-	stage.addChild( skull );
-	game_stage.addChild( stage );
-	return skull;
+ * generates a given number of skulls to be added to the game.
+ * @param {*} numOfSkulls the number of skulls that will be generated
+ * also affects the spacing of the skulls as they are evenly spaced
+ */
+function createSkulls(numOfSkulls){
+	var spacing = end_of_map/numOfSkulls
+	for (let index = 1; index <= numOfSkulls; index++) {
+		createSkull(spacing * index); 	 	
+	}
 }
+
+/**
+	Creates a skull animatedSprite seting its x position based on the xPos
+	the y position in randomly generated to be greater than the floor level
+	the y velocity is also randomly generated to be from 1-12
+	@returns void
+	@var skulls the generated skull is added to this global array.
+*/
+function createSkull( position ) {
+	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
+	skull.interactive = true;
+	skull.position.x = position;
+	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
+	skull.vy = getRand(11) + 1 ;
+	game_stage.addChild( skull );
+	skulls.push(skull)
+}
+
+/**
+ * changes the skulls direction based on if they reach the floor level or reach an arbitrary height
+ * after checking the bounds the funcion updates each skulls y position based on their velocity.
+ * @returns void
+ */
+function animateSkulls(){
+
+	for(var i in skulls){
+		var skull = skulls[i];
+
+		if(skull.position.y > floor_position - skull.height){
+			skull.vy = (-1 * skull.vy);
+		}
+		if(skull.position.y < MAX_SKULL_HEIGHT){
+			skull.vy = (-1 * skull.vy);
+		}
+		
+		skull.position.y += skull.vy
+	}
+}
+
+/**
+ * checks every collision with every skull to see if it collides with the player
+ */
+function checkSkullPlayerCollision(){
+
+}
+
 /**
 	Builds the Floor Tiles Recursively
 */
@@ -186,13 +221,7 @@ function update() {
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
-	// Rotates the enemies
-	big_skull_a.rotation -= 0.025;
-	skull_a.rotation += 0.025;
-	big_skull_b.rotation += 0.025;
-	skull_b.rotation -= 0.025;
-	big_skull_c.rotation -= 0.025;
-	skull_c.rotation += 0.025;
+	animateSkulls();
 	
 	updateCamera();
    }
@@ -441,9 +470,6 @@ function createTile (x, y, size, sprite ) {
 	Helper function that clears the stage
 */
 function clearStage () {
-   for (var i = skull_a.children.length - 1; i >= 0; i--) { skull_a.removeChild(skull_a.children[i]);};
-   for (var i = skull_b.children.length - 1; i >= 0; i--) { skull_b.removeChild(skull_b.children[i]);};
-   for (var i = skull_c.children.length - 1; i >= 0; i--) { skull_c.removeChild(skull_c.children[i]);};
    for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
    for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
    for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
