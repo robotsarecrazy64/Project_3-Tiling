@@ -15,7 +15,8 @@ var startScreen = new PIXI.Container();
 //var difficultyScreen = new PIXI.Container();
 var instructScreen = new PIXI.Container();
 var creditScreen = new PIXI.Container();
-var endScreen = new PIXI.Container();
+var winScreen = new PIXI.Container();
+var loseScreen = new PIXI.Container();
 var back = new PIXI.Container();
 var game_stage = new PIXI.Container();
 
@@ -155,8 +156,7 @@ function createSkulls(numOfSkulls){
 	Creates a skull animatedSprite seting its x position based on the xPos
 	the y position in randomly generated to be greater than the floor level
 	the y velocity is also randomly generated to be from 1-12
-	@returns void
-	@var skulls the generated skull is added to this global array.
+	@var skulls: the generated skull is added to this global array.
 */
 function createSkull( position ) {
 	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
@@ -171,7 +171,6 @@ function createSkull( position ) {
 /**
  * changes the skulls direction based on if they reach the floor level or reach an arbitrary height
  * after checking the bounds the funcion updates each skulls y position based on their velocity.
- * @returns void
  */
 function animateSkulls(){
 
@@ -191,9 +190,58 @@ function animateSkulls(){
 
 /**
  * checks every collision with every skull to see if it collides with the player
+ * using checkRectangleCollision function
  */
-function checkSkullPlayerCollision(){
+function checkSkullPlayerCollisions(){
 
+	for(var i in skulls){
+		var skull = skulls[i];
+		if(checkRectangleCollision(player, skull)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * checks for collision of two objects using there rectangle dimensions
+ * @param {*} object a PIXi.Container Object of subclass
+ * @param {*} otherObject a PIXi.Container Object of subclass
+ * @returns true if there is collisoin; false if otherwise
+ */
+function checkRectangleCollision(object, otherObject){
+
+	let collision = false, combinedHalfWidths, xVector, yVector
+
+	//Find the center points of each sprite
+	object.centerX = object.x +  object.width / 2;
+	object.centerY = object.y + object.height / 2;
+
+	otherObject.centerX = otherObject.x + otherObject.width / 2;
+	otherObject.centerY = otherObject.y + otherObject.height / 2;
+
+	//finding half widths and half heights
+	object.halfWidth = object.width / 2;
+  	object.halfHeight = object.height / 2;
+  	otherObject.halfWidth = otherObject.width / 2;
+	otherObject.halfHeight = otherObject.height / 2;
+
+	//Calculate the distance vector between the sprites
+	xVector = object.centerX - otherObject.centerX;
+	yVector = object.centerY - otherObject.centerY;
+
+	//Figure out the combined half-widths(with a more leaniate threshold for gameplay)
+	//and half-heights
+  	combinedHalfWidthsAdjusted = object.halfWidth + otherObject.halfWidth - 20;
+  	combinedHalfHeights = object.halfHeight + otherObject.halfHeight;
+
+	//Check for a collision on the x axis
+	if (Math.abs(xVector) < (combinedHalfWidthsAdjusted) && Math.abs(yVector) < combinedHalfHeights) {
+		collision = true;	
+	}
+
+	return collision;
 }
 
 /**
@@ -221,6 +269,14 @@ function update() {
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
+	//if the player is hit by a skull the game is over
+	if(checkSkullPlayerCollisions()){
+			console.log("hit");
+			loseScreen.x = player.x;
+			loseScreen.visible = true;
+			game_active = false;
+
+	};
 	animateSkulls();
 	
 	updateCamera();
@@ -296,7 +352,7 @@ function addEnemy() {
 function checkWinCondition () {
 	if( player.x > goal.x ) {
 		winner = true;
-		endScreen.visible = true;
+		winScreen.visible = true;
 		game_active = false;
 	}
 
@@ -340,13 +396,15 @@ function buildScreens() {
    instructScreen.visible = false;
    creditScreen.visible = false;
    //difficultyScreen.visible = false;
-   endScreen.visible = false;
+   winScreen.visible = false;
+   loseScreen.visible = false;
 
     // Text for titles
    var gameTitleText = new PIXI.Text( "Cave Escape!", titleStyle );
    var gameInstructTitleText = new PIXI.Text( "Instructions", titleStyle );
    var gameCreditTitleText = new PIXI.Text( "Credits", titleStyle );
-   var gameEndText = new PIXI.Text( "Game over!\nYou win!", endStyle );
+   var gameWinText = new PIXI.Text( "Game over!\nYou win!", endStyle );
+   var gameLoseText = new PIXI.Text("Game over!\nThe skulls of the cave overtake you.", endStyle);
 
    // Text for title screen options
    var gameStartText = new PIXI.Text( "Start", selectionStyle );
@@ -384,7 +442,8 @@ function buildScreens() {
                                               creditScreen.visible = false; }
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
-   gameRestartText.click = function(event) { endScreen.visible = false; 
+   gameRestartText.click = function(event) { winScreen.visible = false;
+											loseScreen.visible = false; 
                                              current_level = 0;
                                              player.position.x = 0;
                                              game_active = true; 
@@ -392,7 +451,8 @@ function buildScreens() {
                                              generateLevel(); }
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
                                                  current_level = 0;
-                                                 endScreen.visible = false; 
+												 winScreen.visible = false;
+												 loseScreen.visible = false; 
                                                  player.position.x = 0; 
                                                  generateLevel();
                                                  winner = false; 
@@ -403,7 +463,8 @@ function buildScreens() {
    startScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
-   endScreen.addChild( graphics );
+   winScreen.addChild( graphics );
+   loseScreen.addChild(graphics);
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -416,9 +477,14 @@ function buildScreens() {
    creditScreen.addChild( gameCredBackText );
    creditScreen.addChild( gameCreditTitleText );
    creditScreen.addChild( gameCredDesc );
-   endScreen.addChild( gameEndText );
-   endScreen.addChild( gameRestartText );
-   endScreen.addChild( gameReturnTitleText );
+   winScreen.addChild( gameWinText );
+   winScreen.addChild( gameRestartText );
+   winScreen.addChild( gameReturnTitleText );
+   loseScreen.addChild(gameLoseText);
+   loseScreen.addChild(gameRestartText);
+   loseScreen.addChild(gameReturnTitleText);
+   
+
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
@@ -429,7 +495,7 @@ function buildScreens() {
    gameInstructBackText.anchor.set( 1 );
    gameCredBackText.anchor.set( 1 );
    gameCreditTitleText.anchor.set( .5 );
-   gameEndText.anchor.set( .5 );
+   gameWinText.anchor.set( .5 );
    gameRestartText.anchor.set( .5 );
    gameReturnTitleText.anchor.set( .5 );
 
@@ -444,15 +510,17 @@ function buildScreens() {
    gameCredDesc.x = 25; gameCredDesc.y = renderer.height/2;
    gameInstructBackText.x = 975; gameInstructBackText.y = 475;
    gameCredBackText.x = 975; gameCredBackText.y = 475;
-   gameEndText.x = renderer.width/2; gameEndText.y = renderer.height/3 + 10;
+   gameWinText.x = renderer.width/2; gameWinText.y = renderer.height/3 + 10;
+   gameLoseText.x = renderer.width/8; gameLoseText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
    
    master_stage.addChild( startScreen );
    master_stage.addChild( instructScreen );
    master_stage.addChild( creditScreen );
-   master_stage.addChild( endScreen );
-   endScreen.x = end_goal - 950;
+   master_stage.addChild( winScreen );
+   master_stage.addChild( loseScreen )
+   winScreen.x = end_goal - 950;
 }
 
 /**
@@ -473,7 +541,7 @@ function clearStage () {
    for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
    for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
    for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
-   for (var i = endScreen.children.length - 1; i >= 0; i--) { endScreen.removeChild(endScreen.children[i]);};
+   for (var i = winScreen.children.length - 1; i >= 0; i--) { winScreen.removeChild(winScreen.children[i]);};
    for (var i = back.children.length - 1; i >= 0; i--) { back.removeChild(back.children[i]);};
    for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
    for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
