@@ -7,6 +7,8 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 PIXI.Loader.shared
   .add( "assets.json" )
+  .add("it_burns.mp3")
+  .add("ninja.mp3")
   .load( generateLevel );
 
 // Containers
@@ -27,7 +29,11 @@ var ground;
 var lava;
 var player;
 var goal;
+var dash;
+var burny_stuff;
 var skulls = [];
+var ground_tiles = [];
+var lava_tiles = [];
 var numOfSkulls = 25;
 const MAX_SKULL_HEIGHT = 200;
 var game_active = false;
@@ -39,7 +45,8 @@ master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
-var end_of_map = renderer.width*6;
+var end_of_map = renderer.width*5;
+
 var floor_position = 470;
 var tile_size = 50;
 var count = 2;
@@ -47,7 +54,15 @@ var offset = 0;
 var winner = false;
 var current_level = 1;
 var end_goal = end_of_map - 100;
-var back_space = 99;
+var back_space = 999;
+var sound_check = 1;
+var game_mode;
+var calm = 1;
+var moody = 2;
+var angry = 3;
+
+var spooky = 4;
+
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -80,23 +95,26 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 	Initializes the Game Elements
 */
 function generateLevel() {
+	// Setup Game Elements
 	clearStage ();
 	current_level++;
-	offset = 0; 	
-	// Set up Background
-	//back.scale.x = end_of_map/600;
-	//back.scale.y = ;
-	
+	sound_chek = 1;
+	offset = 0;
+	game_mode = calm;
+
+	// Set up sound elements
+	dash = PIXI.sound.Sound.from("ninja.mp3");
+	burny_stuff = PIXI.sound.Sound.from("it_burns.mp3");
+
+	// Set up Background	
 	generateBackground();
 	game_stage.addChild( back );
 
 	// Generate Floor Tiles
 	ground = new PIXI.Texture.from( "groundtile.png" );
-	
 	lava = new PIXI.Texture.from( "lavatile.png" );
-	
 
-	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
+	/**var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	start_tile.position.x = 0;
 	start_tile.position.y = floor_position;
 	start_tile.tilePosition.x = 0;
@@ -104,9 +122,10 @@ function generateLevel() {
 	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	end_tile.position.x = end_of_map - ( 2 * tile_size );
 	end_tile.position.y = floor_position;	
-	game_stage.addChild( start_tile );
+	game_stage.addChild( start_tile );*/
+	ground_tiles = generateFloorArray();
 	generateGroundTiles();
-	game_stage.addChild( end_tile );
+	//game_stage.addChild( end_tile );
 
 	// Set up End goal
 	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
@@ -116,26 +135,36 @@ function generateLevel() {
 	// Set up Player
 	player = createSprite( 0, ground_level, 1, 1, "player1.png");
 	player.interactive = true;
-	document.addEventListener( 'keydown', keydownEventHandler );
 	game_stage.addChild( player );
 	
 	// Set up enemies
-	createSkulls(numOfSkulls);
+	switch( game_mode ) {
+		case calm:
+			createSkulls(getRand(6) + 4);
+			break;
+		case moody:
+			createSkulls(getRand(6) + 9);
+			break;
+		
+		case angry:
+			createSkulls(getRand(6) + 14);
+			break;
+		
+		case spooky:
+			createSkulls(getRand(25));
+			break;
+	}
 	
-        master_stage.addChild( game_stage );
+  master_stage.addChild( game_stage );
 	buildScreens();
 	
 	update();
 }
 
-function buildBackground( x ) {
-	var cave = createSprite( x, 0, 1, 1, "cave_background.png");
-	back.addChild( cave );
-}
-
 function generateBackground() {
-	for ( var back = 0; back < ( ( end_of_map/1000 ) ); back++ ) {
-		buildBackground( 999*back );
+	for ( var screen_size = 0; screen_size < ( ( end_of_map/1000 ) ); screen_size++ ) {
+		var cave = createSprite( back_space*screen_size, 0, 1, 1, "cave_background.png");
+		back.addChild( cave );
 	}
 }
 
@@ -165,7 +194,7 @@ function createSkull( position ) {
 	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
 	skull.vy = getRand(11) + 1 ;
 	game_stage.addChild( skull );
-	skulls.push(skull)
+	skulls.push(skull
 }
 
 /**
@@ -197,6 +226,23 @@ function checkSkullPlayerCollisions(){
 	for(var i in skulls){
 		var skull = skulls[i];
 		if(checkRectangleCollision(player, skull)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+/**
+ * checks every collision with every skull to see if it collides with the player
+ * using checkRectangleCollision function
+ */
+function checkLavaPlayerCollisions(){
+
+	for(var i in lava_tiles){
+		var lava = lava_tiles[i];
+		if(checkRectangleCollision(player, lava)){
 			return true;
 		}
 	}
@@ -248,30 +294,57 @@ function checkRectangleCollision(object, otherObject){
 	Builds the Floor Tiles Recursively
 */
 function generateGroundTiles() {
-	offset += tile_size;
 	
-	if ( offset < ( end_of_map - (2*tile_size ) ) ) {
-		addTile( offset );
+	ground_tiles.forEach( element => {
+		addTile( offset, element );
+		addEnemy();
+		offset += tile_size;
+	});
+	
+	
+	/**if ( offset < ( end_of_map - (2*tile_size ) ) ) {
+		addTile( offset, ground_tiles[offset] );
 		addEnemy();
 		generateGroundTiles();
-	}
+	}*/
 
 }
+
+/**
+	Helper function that adds a random tile element to the stage
+*/
+function addTile( x, type ) {
+	var ground_tile = createTile( x, floor_position, tile_size, ground );
+	var lava_tile = createTile( x, floor_position, tile_size, lava );
+	
+	if ( type == 1 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
+	
+	else { 
+		game_stage.addChild( lava_tile ); // adds a lava tile
+		lava_tiles.push( lava_tile );
+
+	} 
+}
+
 
 /**
 	Update function to animate game assets
 */
 function update() {
- if( game_active )
-   { document.addEventListener( 'keydown', keydownEventHandler );
+ 
+      //document.addEventListener( 'keydown', keydownEventHandler );
       // Updates the player status
 	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
-	//if the player is hit by a skull the game is over
-	if(checkSkullPlayerCollisions()){
-			console.log("hit");
+	//if the player is hit by a skull or lava the game is over
+	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
+			//console.log("hit");
+			if ( sound_check == 1 ) {
+				burny_stuff.play();
+				sound_check--;
+			}
 			loseScreen.x = player.x;
 			loseScreen.visible = true;
 			game_active = false;
@@ -280,28 +353,14 @@ function update() {
 	animateSkulls();
 	
 	updateCamera();
-   }
-   else 
-   { document.removeEventListener( 'keydown', keydownEventHandler ); }
+   if( game_active ) { document.addEventListener( 'keydown', keydownEventHandler ); }
+   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
    // Update renderer
    renderer.render( master_stage );
    requestAnimationFrame( update );
 }
 
-/**
-	Helper function that adds a random tile element to the stage
-*/
-function addTile( x ) {
-	var ground_tile = createTile( x, floor_position, tile_size, ground );
-	var lava_tile = createTile( x, floor_position, tile_size, lava );
-	
-	var rand_num = getRand( 5 ); // get a random number (1 or 2)
-	
-	if ( rand_num < 4 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
-	
-	else { game_stage.addChild( lava_tile ); } // adds a lava tile
-}
 
 /**
 	Helper function that returns a random number from 1 to max
@@ -315,12 +374,22 @@ function getRand( max ) {
 */
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png"); 
+		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
+		//dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
+	
+	if ( event.keyCode == 70 ) {
+		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
+		dash.play(); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
+
+	}
+	
 
   	if ( event.keyCode == 65 ) { // A key
-		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png"); 
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
+		//dash.play(); 
 		if( player.position.x < 0) {player.position.x = 0;}
   	}
 }
@@ -443,8 +512,11 @@ function buildScreens() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { winScreen.visible = false;
-											loseScreen.visible = false; 
+
+					     loseScreen.visible = false; 
                                              current_level = 0;
+					     sound_check = 1;
+
                                              player.position.x = 0;
                                              game_active = true; 
                                              winner = false; 
@@ -572,4 +644,26 @@ function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
 function updateCamera() {
 	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
 	
+}
+
+function generateFloorArray() {
+	var floor_array = [];
+	for ( var value = 0; value < 100; value++ ) {
+		if( value == 0 || (value >= 98)) {
+			floor_array.push( 1 );
+		}
+    else if ( floor_array[ value - 1] == 0 ){
+    		floor_array.push( 1 );
+    }
+    
+    else if ( getRand(5) == 1) { 
+    		floor_array.push( 1 );
+    }
+    
+    else {
+    	floor_array.push( 0 );
+    }
+	}
+	
+	return floor_array;
 }
