@@ -252,8 +252,8 @@ function buildScreens() {
    winScreen.addChild( gameRestartText );
    winScreen.addChild( gameReturnTitleText );
    loseScreen.addChild( gameLoseText );
-   loseScreen.addChild( gameRestartText );
-   loseScreen.addChild( gameReturnTitleText );
+   loseScreen.addChild( gameLoseRestartText );
+   loseScreen.addChild( gameLoseReturnTitleText );
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
@@ -267,6 +267,8 @@ function buildScreens() {
    gameWinText.anchor.set( .5 );
    gameRestartText.anchor.set( .5 );
    gameReturnTitleText.anchor.set( .5 );
+   gameLoseRestartText.anchor.set( .5 );
+   gameLoseReturnTitleText.anchor.set( .5 );
 
 
    // Place Text
@@ -284,6 +286,8 @@ function buildScreens() {
    gameLoseText.x = renderer.width/8; gameLoseText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
+   gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
+   gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
    
    master_stage.addChild( startScreen );
    master_stage.addChild( instructScreen );
@@ -380,13 +384,14 @@ function checkRectangleCollision(object, otherObject){
 	Event Handler for Key events
 */
 function keydownEventHandler(event) {
+   event.preventDefault();
   	if ( event.keyCode == 68 ) { // D key
 		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 	
-	if ( event.keyCode == 70 ) { // F key
-		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
+	if ( event.keyCode == 32 ) { // space bar
+		swapPlayer( player.position.x + (2 * tile_size), player.position.y, 1, 1, "player1.png");
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 
