@@ -41,7 +41,8 @@ master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
-var end_of_map = renderer.width*6;
+var end_of_map = renderer.width*5;
+
 var floor_position = 470;
 var tile_size = 50;
 var count = 2;
@@ -49,7 +50,8 @@ var offset = 0;
 var winner = false;
 var current_level = 1;
 var end_goal = end_of_map - 100;
-var back_space = 99;
+var back_space = 999;
+
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -82,21 +84,18 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 	Initializes the Game Elements
 */
 function generateLevel() {
+	// Setup Game Elements
 	clearStage ();
 	current_level++;
-	offset = 0; 	
-	// Set up Background
-	//back.scale.x = end_of_map/600;
-	//back.scale.y = ;
-	
+	offset = 0;
+
+	// Set up Background	
 	generateBackground();
 	game_stage.addChild( back );
 
 	// Generate Floor Tiles
 	ground = new PIXI.Texture.from( "groundtile.png" );
-	
 	lava = new PIXI.Texture.from( "lavatile.png" );
-	
 
 	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	start_tile.position.x = 0;
@@ -118,7 +117,6 @@ function generateLevel() {
 	// Set up Player
 	player = createSprite( 0, ground_level, 1, 1, "player1.png");
 	player.interactive = true;
-	document.addEventListener( 'keydown', keydownEventHandler );
 	game_stage.addChild( player );
 	
 	// Set up enemies
@@ -132,14 +130,10 @@ function generateLevel() {
 	update();
 }
 
-function buildBackground( x ) {
-	var cave = createSprite( x, 0, 1, 1, "cave_background.png");
-	back.addChild( cave );
-}
-
 function generateBackground() {
-	for ( var back = 0; back < ( ( end_of_map/1000 ) ); back++ ) {
-		buildBackground( 999*back );
+	for ( var screen_size = 0; screen_size < ( ( end_of_map/1000 ) ); screen_size++ ) {
+		var cave = createSprite( back_space*screen_size, 0, 1, 1, "cave_background.png");
+		back.addChild( cave );
 	}
 }
 
@@ -179,8 +173,8 @@ function generateGroundTiles() {
 	Update function to animate game assets
 */
 function update() {
- if( game_active )
-   { document.addEventListener( 'keydown', keydownEventHandler );
+ 
+      //document.addEventListener( 'keydown', keydownEventHandler );
       // Updates the player status
 	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
@@ -195,6 +189,8 @@ function update() {
 	skull_c.rotation += 0.025;
 	
 	updateCamera();
+   if( game_active ) {
+	document.addEventListener( 'keydown', keydownEventHandler );
    }
    else 
    { document.removeEventListener( 'keydown', keydownEventHandler ); }
