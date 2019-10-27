@@ -32,6 +32,8 @@ var goal;
 var dash;
 var burny_stuff;
 var skulls = [];
+var ground_tiles = [];
+var lava_tiles = [];
 var numOfSkulls = 25;
 const MAX_SKULL_HEIGHT = 200;
 var game_active = false;
@@ -112,7 +114,7 @@ function generateLevel() {
 	ground = new PIXI.Texture.from( "groundtile.png" );
 	lava = new PIXI.Texture.from( "lavatile.png" );
 
-	var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
+	/**var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	start_tile.position.x = 0;
 	start_tile.position.y = floor_position;
 	start_tile.tilePosition.x = 0;
@@ -120,9 +122,10 @@ function generateLevel() {
 	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
 	end_tile.position.x = end_of_map - ( 2 * tile_size );
 	end_tile.position.y = floor_position;	
-	game_stage.addChild( start_tile );
+	game_stage.addChild( start_tile );*/
+	ground_tiles = generateFloorArray();
 	generateGroundTiles();
-	game_stage.addChild( end_tile );
+	//game_stage.addChild( end_tile );
 
 	// Set up End goal
 	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
@@ -231,6 +234,23 @@ function checkSkullPlayerCollisions(){
 	return false;
 }
 
+
+/**
+ * checks every collision with every skull to see if it collides with the player
+ * using checkRectangleCollision function
+ */
+function checkLavaPlayerCollisions(){
+
+	for(var i in lava_tiles){
+		var lava = lava_tiles[i];
+		if(checkRectangleCollision(player, lava)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /**
  * checks for collision of two objects using there rectangle dimensions
  * @param {*} object a PIXi.Container Object of subclass
@@ -275,15 +295,38 @@ function checkRectangleCollision(object, otherObject){
 	Builds the Floor Tiles Recursively
 */
 function generateGroundTiles() {
-	offset += tile_size;
 	
-	if ( offset < ( end_of_map - (2*tile_size ) ) ) {
-		addTile( offset );
+	ground_tiles.forEach( element => {
+		addTile( offset, element );
+		//if ( value % 50 == 0 ) { addEnemy(); }
+		offset += tile_size;
+	});
+	
+	
+	/**if ( offset < ( end_of_map - (2*tile_size ) ) ) {
+		addTile( offset, ground_tiles[offset] );
 		addEnemy();
 		generateGroundTiles();
-	}
+	}*/
 
 }
+
+/**
+	Helper function that adds a random tile element to the stage
+*/
+function addTile( x, type ) {
+	var ground_tile = createTile( x, floor_position, tile_size, ground );
+	var lava_tile = createTile( x, floor_position, tile_size, lava );
+	
+	if ( type == 1 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
+	
+	else { 
+		game_stage.addChild( lava_tile ); // adds a lava tile
+		lava_tiles.push( lava_tile );
+
+	} 
+}
+
 
 /**
 	Update function to animate game assets
@@ -297,7 +340,7 @@ function update() {
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
 	//if the player is hit by a skull the game is over
-	if(checkSkullPlayerCollisions()){
+	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
 			//console.log("hit");
 			if ( sound_check == 1 ) {
 				burny_stuff.play();
@@ -319,19 +362,6 @@ function update() {
    requestAnimationFrame( update );
 }
 
-/**
-	Helper function that adds a random tile element to the stage
-*/
-function addTile( x ) {
-	var ground_tile = createTile( x, floor_position, tile_size, ground );
-	var lava_tile = createTile( x, floor_position, tile_size, lava );
-	
-	var rand_num = getRand( 5 ); // get a random number (1 or 2)
-	
-	if ( rand_num < 4 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
-	
-	else { game_stage.addChild( lava_tile ); } // adds a lava tile
-}
 
 /**
 	Helper function that returns a random number from 1 to max
@@ -345,7 +375,7 @@ function getRand( max ) {
 */
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png");
+		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
@@ -605,4 +635,26 @@ function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
 function updateCamera() {
 	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
 	
+}
+
+function generateFloorArray() {
+	var floor_array = [];
+	for ( var value = 0; value < 100; value++ ) {
+		if( value == 0 || (value == 4999)) {
+			floor_array.push( 1 );
+		}
+    else if ( floor_array[ value - 1] == 0 ){
+    		floor_array.push( 1 );
+    }
+    
+    else if ( getRand(5) == 1) { 
+    		floor_array.push( 1 );
+    }
+    
+    else {
+    	floor_array.push( 0 );
+    }
+	}
+	
+	return floor_array;
 }
