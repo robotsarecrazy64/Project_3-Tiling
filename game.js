@@ -196,49 +196,37 @@ function buildScreens() {
    
    // Declares interactable text functions
    gameStartText.click = function(event) { startScreen.visible = false;
-					   game_active = true; }
+                                           game_active = true; }
+                                           
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
+                                              
    gameCredText.click = function(event) { creditScreen.visible = true;
                                           startScreen.visible = false; }
+                                          
    gameCredBackText.click = function(event) { startScreen.visible = true;
                                               creditScreen.visible = false; }
+                                              
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
+                                                  
    gameRestartText.click = function(event) { winScreen.visible = false;
-					     loseScreen.visible = false; 
+                                             loseScreen.visible = false; 
                                              current_level = 0;
-					     sound_check = 1;
+                                             sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
-                                             winner = false; 
+                                             winner = false;
                                              generateLevel(); }
+                                             
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
                                                  current_level = 0;
-												 winScreen.visible = false;
-												 loseScreen.visible = false; 
+                                                 winScreen.visible = false;
+                                                 loseScreen.visible = false; 
                                                  player.position.x = 0; 
-                                                 generateLevel();
                                                  winner = false; 
-                                                 master_stage.x = 0;}
-
-  gameLoseRestartText.click = function(event) { winScreen.visible = false;
-					     loseScreen.visible = false; 
-                                             current_level = 0;
-					     sound_check = 1;
-                                             player.position.x = 0;
-                                             game_active = true; 
-                                             winner = false; 
-                                             generateLevel(); }
-   gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 current_level = 0;
-												 winScreen.visible = false;
-												 loseScreen.visible = false; 
-                                                 player.position.x = 0; 
                                                  generateLevel();
-                                                 winner = false; 
-                                                 master_stage.x = 0;}
-   
+                                                 master_stage.x = 0;}   
 
    
    // Create background for screens screen
@@ -264,10 +252,8 @@ function buildScreens() {
    winScreen.addChild( gameRestartText );
    winScreen.addChild( gameReturnTitleText );
    loseScreen.addChild( gameLoseText );
-   loseScreen.addChild( gameLoseRestartText );
-   loseScreen.addChild( gameLoseReturnTitleText );
-   
-
+   loseScreen.addChild( gameRestartText );
+   loseScreen.addChild( gameReturnTitleText );
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
@@ -281,9 +267,6 @@ function buildScreens() {
    gameWinText.anchor.set( .5 );
    gameRestartText.anchor.set( .5 );
    gameReturnTitleText.anchor.set( .5 );
-   gameLoseRestartText.anchor.set( .5 );
-   gameLoseReturnTitleText.anchor.set( .5 );
-
 
 
    // Place Text
@@ -301,9 +284,6 @@ function buildScreens() {
    gameLoseText.x = renderer.width/8; gameLoseText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
-   gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
-   gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
-
    
    master_stage.addChild( startScreen );
    master_stage.addChild( instructScreen );
@@ -560,14 +540,10 @@ function createTile (x, y, size, sprite ) {
 	Helper function that clears the stage
 */
 function clearStage () {
-   for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
-   for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
-   for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
-   for (var i = winScreen.children.length - 1; i >= 0; i--) { winScreen.removeChild(winScreen.children[i]);};
-   for (var i = back.children.length - 1; i >= 0; i--) { back.removeChild(back.children[i]);};
-   for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
-   for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
-   delete master_stage;
+   while(game_stage.children[0]) 
+   {
+      stage[0].destroy(true); 
+   }
 }
 
 /**
