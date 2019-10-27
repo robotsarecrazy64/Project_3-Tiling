@@ -171,6 +171,9 @@ function buildScreens() {
    var gameInstructBackText = new PIXI.Text( "<- Back", backStyle );
    var gameRestartText = new PIXI.Text( "Play again", selectionStyle );
    var gameReturnTitleText = new PIXI.Text( "Back to title screen", selectionStyle );
+   var gameLoseRestartText = new PIXI.Text( "Play again", selectionStyle );
+   var gameLoseReturnTitleText = new PIXI.Text( "Back to title screen", selectionStyle );
+
    
    // Adds regular text
    var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the cave and" + 
@@ -187,6 +190,9 @@ function buildScreens() {
    gameInstructBackText.interactive = true;
    gameRestartText.interactive = true;
    gameReturnTitleText.interactive = true;
+   gameLoseRestartText.interactive = true;
+   gameLoseReturnTitleText.interactive = true;
+
    
    // Declares interactable text functions
    gameStartText.click = function(event) { startScreen.visible = false;
@@ -215,14 +221,33 @@ function buildScreens() {
                                                  generateLevel();
                                                  winner = false; 
                                                  master_stage.x = 0;}
+
+  gameLoseRestartText.click = function(event) { winScreen.visible = false;
+					     loseScreen.visible = false; 
+                                             current_level = 0;
+					     sound_check = 1;
+                                             player.position.x = 0;
+                                             game_active = true; 
+                                             winner = false; 
+                                             generateLevel(); }
+   gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
+                                                 current_level = 0;
+												 winScreen.visible = false;
+												 loseScreen.visible = false; 
+                                                 player.position.x = 0; 
+                                                 generateLevel();
+                                                 winner = false; 
+                                                 master_stage.x = 0;}
+   
+
    
    // Create background for screens screen
    var graphics = createShape();
    startScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
-   winScreen.addChild( graphics );
-   loseScreen.addChild(graphics);
+   winScreen.addChild( createShape() );
+   loseScreen.addChild( graphics );
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -238,9 +263,9 @@ function buildScreens() {
    winScreen.addChild( gameWinText );
    winScreen.addChild( gameRestartText );
    winScreen.addChild( gameReturnTitleText );
-   loseScreen.addChild(gameLoseText);
-   loseScreen.addChild(gameRestartText);
-   loseScreen.addChild(gameReturnTitleText);
+   loseScreen.addChild( gameLoseText );
+   loseScreen.addChild( gameLoseRestartText );
+   loseScreen.addChild( gameLoseReturnTitleText );
    
 
    
@@ -256,6 +281,10 @@ function buildScreens() {
    gameWinText.anchor.set( .5 );
    gameRestartText.anchor.set( .5 );
    gameReturnTitleText.anchor.set( .5 );
+   gameLoseRestartText.anchor.set( .5 );
+   gameLoseReturnTitleText.anchor.set( .5 );
+
+
 
    // Place Text
    gameTitleText.x = renderer.width/2; gameTitleText.y = renderer.height/4;
@@ -272,6 +301,9 @@ function buildScreens() {
    gameLoseText.x = renderer.width/8; gameLoseText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
+   gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
+   gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
+
    
    master_stage.addChild( startScreen );
    master_stage.addChild( instructScreen );
@@ -293,12 +325,14 @@ function updateCamera() {
 	Update function to animate game assets
 */
 function update() {
-	// Updates the player status
-	if ( !winner ) { checkWinCondition(); } // checks for win condition	
-
+ 
+      //document.addEventListener( 'keydown', keydownEventHandler );
+      // Updates the player status
+	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
+	if ( !winner ) { checkWinCondition(); } // checks for win condition
+	
 	//if the player is hit by a skull or lava tile the game is over
 	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
-			//console.log("hit");
 			if ( sound_check == 1 ) {
 				burny_stuff.play();
 				sound_check--;
@@ -307,14 +341,12 @@ function update() {
 			loseScreen.visible = true;
 			game_active = false;
 
-	}
+	};
 	animateSkulls();
 	
 	updateCamera();
    if( game_active ) { 
 	document.addEventListener( 'keydown', keydownEventHandler );
-	
-	// Plays the background theme
 	music.play();
    }
    else { document.removeEventListener( 'keydown', keydownEventHandler ); }
@@ -519,7 +551,6 @@ function addTile( x, type ) {
 */
 function createTile (x, y, size, sprite ) {
 	var tile = new PIXI.TilingSprite( sprite, size, size );
-	
 	tile.position.x = x;
 	tile.position.y = y;
 	return tile;
@@ -624,20 +655,20 @@ function createShape() {
 */
 function generateFloorArray() {
 	var floor_array = [];
-	for ( var value = 0; value < (end_of_map/tile_size); value++ ) {
-		if( value == 0 || (value >= 98)) {
+	for ( var value = 0; value < ( end_of_map/tile_size ); value++ ) {
+		if( value == 0 || ( value >= 98 ) ) {
 			floor_array.push( 1 );
 		}
 		else if ( floor_array[ value - 1] == 0 ){
 				floor_array.push( 1 );
 		}
 		
-		else if ( getRand(5) == 1) { 
-				floor_array.push( 1 );
+		else if ( getRand(5) <= 2 ) { 
+				floor_array.push( 0 );
 		}
 		
 		else {
-			floor_array.push( 0 );
+			floor_array.push( 1 );
 		}
 	}
 	
