@@ -155,8 +155,7 @@ function generateLevel() {
 			break;
 	}
 	
-	
-        master_stage.addChild( game_stage );
+  master_stage.addChild( game_stage );
 	buildScreens();
 	
 	update();
@@ -195,7 +194,7 @@ function createSkull( position ) {
 	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
 	skull.vy = getRand(11) + 1 ;
 	game_stage.addChild( skull );
-	skulls.push(skull)
+	skulls.push(skull
 }
 
 /**
@@ -339,7 +338,7 @@ function update() {
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
-	//if the player is hit by a skull the game is over
+	//if the player is hit by a skull or lava the game is over
 	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
 			//console.log("hit");
 			if ( sound_check == 1 ) {
@@ -505,9 +504,11 @@ function buildScreens() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { winScreen.visible = false;
+
 					     loseScreen.visible = false; 
                                              current_level = 0;
 					     sound_check = 1;
+
                                              player.position.x = 0;
                                              game_active = true; 
                                              winner = false; 
