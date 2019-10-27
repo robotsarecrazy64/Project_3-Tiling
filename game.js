@@ -298,7 +298,7 @@ function generateGroundTiles() {
 	
 	ground_tiles.forEach( element => {
 		addTile( offset, element );
-		//if ( value % 50 == 0 ) { addEnemy(); }
+		addEnemy();
 		offset += tile_size;
 	});
 	
@@ -375,14 +375,22 @@ function getRand( max ) {
 */
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
+		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
+		//dash.play(); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
+  	}
+	
+	if ( event.keyCode == 70 ) {
 		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
-  	}
+
+	}
+	
 
   	if ( event.keyCode == 65 ) { // A key
 		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
-		dash.play(); 
+		//dash.play(); 
 		if( player.position.x < 0) {player.position.x = 0;}
   	}
 }
@@ -640,7 +648,7 @@ function updateCamera() {
 function generateFloorArray() {
 	var floor_array = [];
 	for ( var value = 0; value < 100; value++ ) {
-		if( value == 0 || (value == 4999)) {
+		if( value == 0 || (value >= 98)) {
 			floor_array.push( 1 );
 		}
     else if ( floor_array[ value - 1] == 0 ){
