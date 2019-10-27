@@ -7,6 +7,8 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 
 PIXI.Loader.shared
   .add( "assets.json" )
+  .add("it_burns.mp3")
+  .add("ninja.mp3")
   .load( generateLevel );
 
 // Containers
@@ -15,11 +17,9 @@ var startScreen = new PIXI.Container();
 //var difficultyScreen = new PIXI.Container();
 var instructScreen = new PIXI.Container();
 var creditScreen = new PIXI.Container();
-var endScreen = new PIXI.Container();
+var winScreen = new PIXI.Container();
+var loseScreen = new PIXI.Container();
 var back = new PIXI.Container();
-var skull_a = new PIXI.Container();
-var skull_b = new PIXI.Container();
-var skull_c = new PIXI.Container();
 var game_stage = new PIXI.Container();
 
 // Assets
@@ -29,9 +29,11 @@ var ground;
 var lava;
 var player;
 var goal;
-var big_skull_a;
-var big_skull_b;
-var big_skull_c;
+var dash;
+var burny_stuff;
+var skulls = [];
+var numOfSkulls = 25;
+const MAX_SKULL_HEIGHT = 200;
 var game_active = false;
 var GAME_WIDTH = renderer.width;
 var GAME_HEIGHT = renderer.height;
@@ -51,6 +53,13 @@ var winner = false;
 var current_level = 1;
 var end_goal = end_of_map - 100;
 var back_space = 999;
+var sound_check = 1;
+var game_mode;
+var calm = 1;
+var moody = 2;
+var angry = 3;
+
+var spooky = 4;
 
 
 // -------------------- STYLES ----------------------------------------------------
@@ -87,7 +96,13 @@ function generateLevel() {
 	// Setup Game Elements
 	clearStage ();
 	current_level++;
+	sound_chek = 1;
 	offset = 0;
+	game_mode = calm;
+
+	// Set up sound elements
+	dash = PIXI.sound.Sound.from("ninja.mp3");
+	burny_stuff = PIXI.sound.Sound.from("it_burns.mp3");
 
 	// Set up Background	
 	generateBackground();
@@ -120,9 +135,23 @@ function generateLevel() {
 	game_stage.addChild( player );
 	
 	// Set up enemies
-        big_skull_a = createSkull( skull_a, end_of_map/4 );
-	big_skull_b = createSkull( skull_b, end_of_map/2 );
-	big_skull_c = createSkull ( skull_c, ( 3 * end_of_map ) / 4 );
+	switch( game_mode ) {
+		case calm:
+			createSkulls(getRand(6) + 4);
+			break;
+		case moody:
+			createSkulls(getRand(6) + 9);
+			break;
+		
+		case angry:
+			createSkulls(getRand(6) + 14);
+			break;
+		
+		case spooky:
+			createSkulls(getRand(25));
+			break;
+	}
+	
 	
         master_stage.addChild( game_stage );
 	buildScreens();
@@ -139,22 +168,109 @@ function generateBackground() {
 
 
 /**
-	Creates the enemy sprite
-*/
-function createSkull( stage, position ) {
-	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
-	skull.anchor.x = 0.5;
-	skull.anchor.y = 0.5;
-	skull.interactive = true;
-	stage.position.x = position;
-	stage.position.y = ground_level - ((tile_size*3)/2);
-	stage.pivot.x = tile_size;
-	stage.pivot.y = tile_size;
-        stage.rotation = 0;
-	stage.addChild( skull );
-	game_stage.addChild( stage );
-	return skull;
+ * generates a given number of skulls to be added to the game.
+ * @param {*} numOfSkulls the number of skulls that will be generated
+ * also affects the spacing of the skulls as they are evenly spaced
+ */
+function createSkulls(numOfSkulls){
+	var spacing = end_of_map/numOfSkulls
+	for (let index = 1; index <= numOfSkulls; index++) {
+		createSkull(spacing * index); 	 	
+	}
 }
+
+/**
+	Creates a skull animatedSprite seting its x position based on the xPos
+	the y position in randomly generated to be greater than the floor level
+	the y velocity is also randomly generated to be from 1-12
+	@var skulls: the generated skull is added to this global array.
+*/
+function createSkull( position ) {
+	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
+	skull.interactive = true;
+	skull.position.x = position;
+	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
+	skull.vy = getRand(11) + 1 ;
+	game_stage.addChild( skull );
+	skulls.push(skull)
+}
+
+/**
+ * changes the skulls direction based on if they reach the floor level or reach an arbitrary height
+ * after checking the bounds the funcion updates each skulls y position based on their velocity.
+ */
+function animateSkulls(){
+
+	for(var i in skulls){
+		var skull = skulls[i];
+
+		if(skull.position.y > floor_position - skull.height){
+			skull.vy = (-1 * skull.vy);
+		}
+		if(skull.position.y < MAX_SKULL_HEIGHT){
+			skull.vy = (-1 * skull.vy);
+		}
+		
+		skull.position.y += skull.vy
+	}
+}
+
+/**
+ * checks every collision with every skull to see if it collides with the player
+ * using checkRectangleCollision function
+ */
+function checkSkullPlayerCollisions(){
+
+	for(var i in skulls){
+		var skull = skulls[i];
+		if(checkRectangleCollision(player, skull)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * checks for collision of two objects using there rectangle dimensions
+ * @param {*} object a PIXi.Container Object of subclass
+ * @param {*} otherObject a PIXi.Container Object of subclass
+ * @returns true if there is collisoin; false if otherwise
+ */
+function checkRectangleCollision(object, otherObject){
+
+	let collision = false, combinedHalfWidths, xVector, yVector
+
+	//Find the center points of each sprite
+	object.centerX = object.x +  object.width / 2;
+	object.centerY = object.y + object.height / 2;
+
+	otherObject.centerX = otherObject.x + otherObject.width / 2;
+	otherObject.centerY = otherObject.y + otherObject.height / 2;
+
+	//finding half widths and half heights
+	object.halfWidth = object.width / 2;
+  	object.halfHeight = object.height / 2;
+  	otherObject.halfWidth = otherObject.width / 2;
+	otherObject.halfHeight = otherObject.height / 2;
+
+	//Calculate the distance vector between the sprites
+	xVector = object.centerX - otherObject.centerX;
+	yVector = object.centerY - otherObject.centerY;
+
+	//Figure out the combined half-widths(with a more leaniate threshold for gameplay)
+	//and half-heights
+  	combinedHalfWidthsAdjusted = object.halfWidth + otherObject.halfWidth - 20;
+  	combinedHalfHeights = object.halfHeight + otherObject.halfHeight;
+
+	//Check for a collision on the x axis
+	if (Math.abs(xVector) < (combinedHalfWidthsAdjusted) && Math.abs(yVector) < combinedHalfHeights) {
+		collision = true;	
+	}
+
+	return collision;
+}
+
 /**
 	Builds the Floor Tiles Recursively
 */
@@ -180,20 +296,23 @@ function update() {
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
 	
-	// Rotates the enemies
-	big_skull_a.rotation -= 0.025;
-	skull_a.rotation += 0.025;
-	big_skull_b.rotation += 0.025;
-	skull_b.rotation -= 0.025;
-	big_skull_c.rotation -= 0.025;
-	skull_c.rotation += 0.025;
+	//if the player is hit by a skull the game is over
+	if(checkSkullPlayerCollisions()){
+			//console.log("hit");
+			if ( sound_check == 1 ) {
+				burny_stuff.play();
+				sound_check--;
+			}
+			loseScreen.x = player.x;
+			loseScreen.visible = true;
+			game_active = false;
+
+	};
+	animateSkulls();
 	
 	updateCamera();
-   if( game_active ) {
-	document.addEventListener( 'keydown', keydownEventHandler );
-   }
-   else 
-   { document.removeEventListener( 'keydown', keydownEventHandler ); }
+   if( game_active ) { document.addEventListener( 'keydown', keydownEventHandler ); }
+   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
    // Update renderer
    renderer.render( master_stage );
@@ -226,12 +345,14 @@ function getRand( max ) {
 */
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png"); 
+		swapPlayer( player.position.x + tile_size, player.position.y, 1, 1, "player1.png");
+		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 
   	if ( event.keyCode == 65 ) { // A key
-		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png"); 
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
+		dash.play(); 
 		if( player.position.x < 0) {player.position.x = 0;}
   	}
 }
@@ -263,7 +384,7 @@ function addEnemy() {
 function checkWinCondition () {
 	if( player.x > goal.x ) {
 		winner = true;
-		endScreen.visible = true;
+		winScreen.visible = true;
 		game_active = false;
 	}
 
@@ -307,13 +428,15 @@ function buildScreens() {
    instructScreen.visible = false;
    creditScreen.visible = false;
    //difficultyScreen.visible = false;
-   endScreen.visible = false;
+   winScreen.visible = false;
+   loseScreen.visible = false;
 
     // Text for titles
    var gameTitleText = new PIXI.Text( "Cave Escape!", titleStyle );
    var gameInstructTitleText = new PIXI.Text( "Instructions", titleStyle );
    var gameCreditTitleText = new PIXI.Text( "Credits", titleStyle );
-   var gameEndText = new PIXI.Text( "Game over!\nYou win!", endStyle );
+   var gameWinText = new PIXI.Text( "Game over!\nYou win!", endStyle );
+   var gameLoseText = new PIXI.Text("Game over!\nThe skulls of the cave overtake you.", endStyle);
 
    // Text for title screen options
    var gameStartText = new PIXI.Text( "Start", selectionStyle );
@@ -328,7 +451,7 @@ function buildScreens() {
    var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the cave and" + 
       " make it\nto the end! The character is moved using the A and D keys.\n\nMove the character" + 
       " to the end of the cave to win.", selectionStyle );
-   var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\n\nRenderer used: PixiJS", 
+   var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\nDarius Dumel\n\nRenderer used: PixiJS", 
       selectionStyle );
 
    // Declare texts interactable
@@ -351,24 +474,30 @@ function buildScreens() {
                                               creditScreen.visible = false; }
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
-   gameRestartText.click = function(event) { endScreen.visible = false; 
-					     current_level = 0;
+   gameRestartText.click = function(event) { winScreen.visible = false;
+					     loseScreen.visible = false; 
+                                             current_level = 0;
+					     sound_check = 1;
                                              player.position.x = 0;
-					     game_active = true; 
+                                             game_active = true; 
                                              winner = false; 
                                              generateLevel(); }
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
-						 current_level = 0;
-                                                 endScreen.visible = false; 
+                                                 current_level = 0;
+												 winScreen.visible = false;
+												 loseScreen.visible = false; 
                                                  player.position.x = 0; 
-                                                 winner = false; }
+                                                 generateLevel();
+                                                 winner = false; 
+                                                 master_stage.x = 0;}
    
    // Create background for screens screen
    var graphics = createShape();
    startScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
-   endScreen.addChild( graphics );
+   winScreen.addChild( graphics );
+   loseScreen.addChild(graphics);
 
    // Add text to screens
    startScreen.addChild( gameTitleText );
@@ -381,9 +510,14 @@ function buildScreens() {
    creditScreen.addChild( gameCredBackText );
    creditScreen.addChild( gameCreditTitleText );
    creditScreen.addChild( gameCredDesc );
-   endScreen.addChild( gameEndText );
-   endScreen.addChild( gameRestartText );
-   endScreen.addChild( gameReturnTitleText );
+   winScreen.addChild( gameWinText );
+   winScreen.addChild( gameRestartText );
+   winScreen.addChild( gameReturnTitleText );
+   loseScreen.addChild(gameLoseText);
+   loseScreen.addChild(gameRestartText);
+   loseScreen.addChild(gameReturnTitleText);
+   
+
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
@@ -394,7 +528,7 @@ function buildScreens() {
    gameInstructBackText.anchor.set( 1 );
    gameCredBackText.anchor.set( 1 );
    gameCreditTitleText.anchor.set( .5 );
-   gameEndText.anchor.set( .5 );
+   gameWinText.anchor.set( .5 );
    gameRestartText.anchor.set( .5 );
    gameReturnTitleText.anchor.set( .5 );
 
@@ -409,15 +543,17 @@ function buildScreens() {
    gameCredDesc.x = 25; gameCredDesc.y = renderer.height/2;
    gameInstructBackText.x = 975; gameInstructBackText.y = 475;
    gameCredBackText.x = 975; gameCredBackText.y = 475;
-   gameEndText.x = renderer.width/2; gameEndText.y = renderer.height/3 + 10;
+   gameWinText.x = renderer.width/2; gameWinText.y = renderer.height/3 + 10;
+   gameLoseText.x = renderer.width/8; gameLoseText.y = renderer.height/3 + 10;
    gameRestartText.x = renderer.width/2; gameRestartText.y = renderer.height/2 + 50;
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
    
    master_stage.addChild( startScreen );
    master_stage.addChild( instructScreen );
    master_stage.addChild( creditScreen );
-   master_stage.addChild( endScreen );
-   endScreen.x = end_goal - 950;
+   master_stage.addChild( winScreen );
+   master_stage.addChild( loseScreen )
+   winScreen.x = end_goal - 950;
 }
 
 /**
@@ -435,13 +571,10 @@ function createTile (x, y, size, sprite ) {
 	Helper function that clears the stage
 */
 function clearStage () {
-   for (var i = skull_a.children.length - 1; i >= 0; i--) { skull_a.removeChild(skull_a.children[i]);};
-   for (var i = skull_b.children.length - 1; i >= 0; i--) { skull_b.removeChild(skull_b.children[i]);};
-   for (var i = skull_c.children.length - 1; i >= 0; i--) { skull_c.removeChild(skull_c.children[i]);};
    for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
    for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
    for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
-   for (var i = endScreen.children.length - 1; i >= 0; i--) { endScreen.removeChild(endScreen.children[i]);};
+   for (var i = winScreen.children.length - 1; i >= 0; i--) { winScreen.removeChild(winScreen.children[i]);};
    for (var i = back.children.length - 1; i >= 0; i--) { back.removeChild(back.children[i]);};
    for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
    for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
