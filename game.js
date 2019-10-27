@@ -4,11 +4,11 @@ var renderer = PIXI.autoDetectRenderer( { width: 1000, height: 500, backgroundCo
 gameport.appendChild( renderer.view );
 
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
-
 PIXI.Loader.shared
   .add( "assets.json" )
   .add("it_burns.mp3")
   .add("ninja.mp3")
+  .add("main_song.mp3")
   .load( generateLevel );
 
 // Containers
@@ -31,27 +31,20 @@ var player;
 var goal;
 var dash;
 var burny_stuff;
+var music;
 var skulls = [];
 var ground_tiles = [];
 var lava_tiles = [];
-var numOfSkulls = 25;
-const MAX_SKULL_HEIGHT = 200;
+var winner = false;
 var game_active = false;
-var GAME_WIDTH = renderer.width;
-var GAME_HEIGHT = renderer.height;
-var GAME_SCALE = 1;
-master_stage.scale.x = GAME_SCALE;
-master_stage.scale.y = GAME_SCALE;
 
 // Variables to improve readability
 var ground_level = 423;
 var end_of_map = renderer.width*5;
-
 var floor_position = 470;
 var tile_size = 50;
 var count = 2;
 var offset = 0;
-var winner = false;
 var current_level = 1;
 var end_goal = end_of_map - 100;
 var back_space = 999;
@@ -60,9 +53,13 @@ var game_mode;
 var calm = 1;
 var moody = 2;
 var angry = 3;
-
 var spooky = 4;
-
+const MAX_SKULL_HEIGHT = 250;
+var GAME_WIDTH = renderer.width;
+var GAME_HEIGHT = renderer.height;
+var GAME_SCALE = 1;
+master_stage.scale.x = GAME_SCALE;
+master_stage.scale.y = GAME_SCALE;
 
 // -------------------- STYLES ----------------------------------------------------
 // Texts that are titles on screens
@@ -90,7 +87,6 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
                                             align: 'center',
                                             fill: '#ffffff' });
 
-
 /**
 	Initializes the Game Elements
 */
@@ -105,6 +101,7 @@ function generateLevel() {
 	// Set up sound elements
 	dash = PIXI.sound.Sound.from("ninja.mp3");
 	burny_stuff = PIXI.sound.Sound.from("it_burns.mp3");
+	music = PIXI.sound.Sound.from("main_song.mp3");
 
 	// Set up Background	
 	generateBackground();
@@ -113,24 +110,12 @@ function generateLevel() {
 	// Generate Floor Tiles
 	ground = new PIXI.Texture.from( "groundtile.png" );
 	lava = new PIXI.Texture.from( "lavatile.png" );
-
-	/**var start_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
-	start_tile.position.x = 0;
-	start_tile.position.y = floor_position;
-	start_tile.tilePosition.x = 0;
-	start_tile.tilePosition.y = 0;
-	var end_tile = new PIXI.TilingSprite( ground, tile_size, tile_size ); 
-	end_tile.position.x = end_of_map - ( 2 * tile_size );
-	end_tile.position.y = floor_position;	
-	game_stage.addChild( start_tile );*/
 	ground_tiles = generateFloorArray();
 	generateGroundTiles();
-	//game_stage.addChild( end_tile );
 
 	// Set up End goal
 	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
 	game_stage.addChild( goal );
-
 
 	// Set up Player
 	player = createSprite( 0, ground_level, 1, 1, "player1.png");
@@ -155,312 +140,15 @@ function generateLevel() {
 			break;
 	}
 	
-  master_stage.addChild( game_stage );
+	master_stage.addChild( game_stage );
 	buildScreens();
 	
 	update();
 }
 
-function generateBackground() {
-	for ( var screen_size = 0; screen_size < ( ( end_of_map/1000 ) ); screen_size++ ) {
-		var cave = createSprite( back_space*screen_size, 0, 1, 1, "cave_background.png");
-		back.addChild( cave );
-	}
-}
-
-
 /**
- * generates a given number of skulls to be added to the game.
- * @param {*} numOfSkulls the number of skulls that will be generated
- * also affects the spacing of the skulls as they are evenly spaced
- */
-function createSkulls(numOfSkulls){
-	var spacing = end_of_map/numOfSkulls
-	for (let index = 1; index <= numOfSkulls; index++) {
-		createSkull(spacing * index); 	 	
-	}
-}
-
-/**
-	Creates a skull animatedSprite seting its x position based on the xPos
-	the y position in randomly generated to be greater than the floor level
-	the y velocity is also randomly generated to be from 1-12
-	@var skulls: the generated skull is added to this global array.
+	Builds the different screens of the game
 */
-function createSkull( position ) {
-	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
-	skull.interactive = true;
-	skull.position.x = position;
-	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
-	skull.vy = getRand(11) + 1 ;
-	game_stage.addChild( skull );
-	skulls.push(skull
-}
-
-/**
- * changes the skulls direction based on if they reach the floor level or reach an arbitrary height
- * after checking the bounds the funcion updates each skulls y position based on their velocity.
- */
-function animateSkulls(){
-
-	for(var i in skulls){
-		var skull = skulls[i];
-
-		if(skull.position.y > floor_position - skull.height){
-			skull.vy = (-1 * skull.vy);
-		}
-		if(skull.position.y < MAX_SKULL_HEIGHT){
-			skull.vy = (-1 * skull.vy);
-		}
-		
-		skull.position.y += skull.vy
-	}
-}
-
-/**
- * checks every collision with every skull to see if it collides with the player
- * using checkRectangleCollision function
- */
-function checkSkullPlayerCollisions(){
-
-	for(var i in skulls){
-		var skull = skulls[i];
-		if(checkRectangleCollision(player, skull)){
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-/**
- * checks every collision with every skull to see if it collides with the player
- * using checkRectangleCollision function
- */
-function checkLavaPlayerCollisions(){
-
-	for(var i in lava_tiles){
-		var lava = lava_tiles[i];
-		if(checkRectangleCollision(player, lava)){
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/**
- * checks for collision of two objects using there rectangle dimensions
- * @param {*} object a PIXi.Container Object of subclass
- * @param {*} otherObject a PIXi.Container Object of subclass
- * @returns true if there is collisoin; false if otherwise
- */
-function checkRectangleCollision(object, otherObject){
-
-	let collision = false, combinedHalfWidths, xVector, yVector
-
-	//Find the center points of each sprite
-	object.centerX = object.x +  object.width / 2;
-	object.centerY = object.y + object.height / 2;
-
-	otherObject.centerX = otherObject.x + otherObject.width / 2;
-	otherObject.centerY = otherObject.y + otherObject.height / 2;
-
-	//finding half widths and half heights
-	object.halfWidth = object.width / 2;
-  	object.halfHeight = object.height / 2;
-  	otherObject.halfWidth = otherObject.width / 2;
-	otherObject.halfHeight = otherObject.height / 2;
-
-	//Calculate the distance vector between the sprites
-	xVector = object.centerX - otherObject.centerX;
-	yVector = object.centerY - otherObject.centerY;
-
-	//Figure out the combined half-widths(with a more leaniate threshold for gameplay)
-	//and half-heights
-  	combinedHalfWidthsAdjusted = object.halfWidth + otherObject.halfWidth - 20;
-  	combinedHalfHeights = object.halfHeight + otherObject.halfHeight;
-
-	//Check for a collision on the x axis
-	if (Math.abs(xVector) < (combinedHalfWidthsAdjusted) && Math.abs(yVector) < combinedHalfHeights) {
-		collision = true;	
-	}
-
-	return collision;
-}
-
-/**
-	Builds the Floor Tiles Recursively
-*/
-function generateGroundTiles() {
-	
-	ground_tiles.forEach( element => {
-		addTile( offset, element );
-		addEnemy();
-		offset += tile_size;
-	});
-	
-	
-	/**if ( offset < ( end_of_map - (2*tile_size ) ) ) {
-		addTile( offset, ground_tiles[offset] );
-		addEnemy();
-		generateGroundTiles();
-	}*/
-
-}
-
-/**
-	Helper function that adds a random tile element to the stage
-*/
-function addTile( x, type ) {
-	var ground_tile = createTile( x, floor_position, tile_size, ground );
-	var lava_tile = createTile( x, floor_position, tile_size, lava );
-	
-	if ( type == 1 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
-	
-	else { 
-		game_stage.addChild( lava_tile ); // adds a lava tile
-		lava_tiles.push( lava_tile );
-
-	} 
-}
-
-
-/**
-	Update function to animate game assets
-*/
-function update() {
- 
-      //document.addEventListener( 'keydown', keydownEventHandler );
-      // Updates the player status
-	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
-	if ( !winner ) { checkWinCondition(); } // checks for win condition
-	if ( ( player.position.x > ( end_of_map - tile_size )) && winner ) { player.position.x = 0;} // allow the game to loop during free play
-	
-	//if the player is hit by a skull or lava the game is over
-	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
-			//console.log("hit");
-			if ( sound_check == 1 ) {
-				burny_stuff.play();
-				sound_check--;
-			}
-			loseScreen.x = player.x;
-			loseScreen.visible = true;
-			game_active = false;
-
-	};
-	animateSkulls();
-	
-	updateCamera();
-   if( game_active ) { document.addEventListener( 'keydown', keydownEventHandler ); }
-   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
-
-   // Update renderer
-   renderer.render( master_stage );
-   requestAnimationFrame( update );
-}
-
-
-/**
-	Helper function that returns a random number from 1 to max
-*/
-function getRand( max ) {
-	return Math.floor(( Math.random() * max ) + 1 );
-}
-
-/**
-	Event Handler for Key events
-*/
-function keydownEventHandler(event) {
-  	if ( event.keyCode == 68 ) { // D key
-		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
-		//dash.play(); 
-		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
-  	}
-	
-	if ( event.keyCode == 70 ) {
-		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
-		dash.play(); 
-		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
-
-	}
-	
-
-  	if ( event.keyCode == 65 ) { // A key
-		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
-		//dash.play(); 
-		if( player.position.x < 0) {player.position.x = 0;}
-  	}
-}
-
-/**
-	Helper function that adds enemies to the stage
-*/
-function addEnemy() {
-	var bat = createMovieClip( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), .75, .75, "bat", 1, 2 );
-	var tiny_skull = createSprite( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), 1, 1, "flaming_skull.png" );
-	var randomize = getRand( 2 );
-	if ( randomize == 1 ) {
-		bat.anchor.x = 0;
-		bat.anchor.y = 0;
-		game_stage.addChild( bat );
-	}
-	
-	else {
-		tiny_skull.anchor.x = 0;
-		tiny_skull.anchor.y = 0;
-		game_stage.addChild( tiny_skull );
-
-	}
-}
-
-/**
-	Checks if the player reached the End Goal
-*/
-function checkWinCondition () {
-	if( player.x > goal.x ) {
-		winner = true;
-		winScreen.visible = true;
-		game_active = false;
-	}
-
-
-}
-
-/**
-	Helper function that swaps the player sprite
-*/
-function swapPlayer ( x, y, scale_x, scale_y, image ) {
-	var temp_x = x;
-	var temp_y = y;
-	game_stage.removeChild( player );
-	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
-	game_stage.addChild( player );
-}
-
-/**
-	Helper function that creates a sprite
-*/
-function createSprite (x, y, scale_x, scale_y, image ) {
-	var sprite = new PIXI.Sprite( PIXI.Texture.from( image ) );
-	sprite.position.x = x;
-	sprite.position.y = y;
-	sprite.scale.x = scale_y;
-	sprite.scale.y = scale_x;
-	return sprite;
-}
-/**
-
-*/
-function createShape() {
-   var graphics = new PIXI.Graphics();
-   graphics.beginFill('0x000000');
-   graphics.drawRect(0, 0, 1000, 500);
-   graphics.endFill();
-   return graphics;
-}
-
 function buildScreens() {
    instructScreen.visible = false;
    creditScreen.visible = false;
@@ -512,11 +200,9 @@ function buildScreens() {
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
    gameRestartText.click = function(event) { winScreen.visible = false;
-
 					     loseScreen.visible = false; 
                                              current_level = 0;
 					     sound_check = 1;
-
                                              player.position.x = 0;
                                              game_active = true; 
                                              winner = false; 
@@ -596,6 +282,239 @@ function buildScreens() {
 }
 
 /**
+	Updates the camera to follow the player
+*/
+function updateCamera() {
+	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
+	
+}
+
+/**
+	Update function to animate game assets
+*/
+function update() {
+	// Updates the player status
+	if ( !winner ) { checkWinCondition(); } // checks for win condition	
+
+	//if the player is hit by a skull or lava tile the game is over
+	if(checkSkullPlayerCollisions() || checkLavaPlayerCollisions() ){
+			//console.log("hit");
+			if ( sound_check == 1 ) {
+				burny_stuff.play();
+				sound_check--;
+			}
+			loseScreen.x = player.x;
+			loseScreen.visible = true;
+			game_active = false;
+
+	}
+	animateSkulls();
+	
+	updateCamera();
+   if( game_active ) { 
+	document.addEventListener( 'keydown', keydownEventHandler );
+	
+	// Plays the background theme
+	music.play();
+   }
+   else { document.removeEventListener( 'keydown', keydownEventHandler ); }
+
+   // Update renderer
+   renderer.render( master_stage );
+   requestAnimationFrame( update );
+}
+
+/**
+ * checks for collision of two objects using there rectangle dimensions
+ * @param {*} object a PIXi.Container Object of subclass
+ * @param {*} otherObject a PIXi.Container Object of subclass
+ * @returns true if there is collisoin; false if otherwise
+ */
+function checkRectangleCollision(object, otherObject){
+
+	let collision = false, combinedHalfWidths, xVector, yVector
+
+	//Find the center points of each sprite
+	object.centerX = object.x +  object.width / 2;
+	object.centerY = object.y + object.height / 2;
+
+	otherObject.centerX = otherObject.x + otherObject.width / 2;
+	otherObject.centerY = otherObject.y + otherObject.height / 2;
+
+	//finding half widths and half heights
+	object.halfWidth = object.width / 2;
+  	object.halfHeight = object.height / 2;
+  	otherObject.halfWidth = otherObject.width / 2;
+	otherObject.halfHeight = otherObject.height / 2;
+
+	//Calculate the distance vector between the sprites
+	xVector = object.centerX - otherObject.centerX;
+	yVector = object.centerY - otherObject.centerY;
+
+	//Figure out the combined half-widths(with a more leaniate threshold for gameplay)
+	//and half-heights
+  	combinedHalfWidthsAdjusted = object.halfWidth + otherObject.halfWidth - 20;
+  	combinedHalfHeights = object.halfHeight + otherObject.halfHeight;
+
+	//Check for a collision on the x axis
+	if (Math.abs(xVector) < (combinedHalfWidthsAdjusted) && Math.abs(yVector) < combinedHalfHeights) {
+		collision = true;	
+	}
+
+	return collision;
+}
+
+/**
+	Event Handler for Key events
+*/
+function keydownEventHandler(event) {
+  	if ( event.keyCode == 68 ) { // D key
+		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
+  	}
+	
+	if ( event.keyCode == 70 ) { // F key
+		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
+		dash.play(); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
+
+	}
+
+  	if ( event.keyCode == 65 ) { // A key
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
+		if( player.position.x < 0) {player.position.x = 0;}
+  	}
+}
+
+/**
+	Checks if the player reached the End Goal
+*/
+function checkWinCondition () {
+	if( player.x > goal.x ) {
+		winner = true;
+		winScreen.visible = true;
+		game_active = false;
+	}
+}
+
+/**
+	Generates the background images
+*/
+function generateBackground() {
+	for ( var screen_size = 0; screen_size < ( ( end_of_map/1000 ) ); screen_size++ ) {
+		var cave = createSprite( back_space*screen_size, 0, 1, 1, "cave_background.png");
+		back.addChild( cave );
+	}
+}
+
+/**
+ * generates a given number of skulls to be added to the game.
+ * @param {*} numOfSkulls the number of skulls that will be generated
+ * also affects the spacing of the skulls as they are evenly spaced
+ */
+function createSkulls(numOfSkulls){
+	var spacing = end_of_map/numOfSkulls
+	for (let index = 1; index <= numOfSkulls; index++) {
+		createSkull(spacing * index); 	 	
+	}
+}
+
+/**
+	Creates a skull animatedSprite seting its x position based on the xPos
+	the y position in randomly generated to be greater than the floor level
+	the y velocity is also randomly generated to be from 1-12
+	@var skulls: the generated skull is added to this global array.
+*/
+function createSkull( position ) {
+	var skull = createMovieClip( 0, 0, 1.25, 1.25, "laughing_skull", 1, 2 );
+	skull.interactive = true;
+	skull.position.x = position;
+	skull.y = ground_level - ( 75 + (getRand(9) * 10)) ;
+	skull.vy = getRand(11) + 1 ;
+	game_stage.addChild( skull );
+	skulls.push(skull)
+}
+
+/**
+ * changes the skulls direction based on if they reach the floor level or reach an arbitrary height
+ * after checking the bounds the funcion updates each skulls y position based on their velocity.
+ */
+function animateSkulls(){
+
+	for(var i in skulls){
+		var skull = skulls[i];
+
+		if(skull.position.y > floor_position - skull.height){
+			skull.vy = (-1 * skull.vy);
+		}
+		if(skull.position.y < MAX_SKULL_HEIGHT){
+			skull.vy = (-1 * skull.vy);
+		}
+		
+		skull.position.y += skull.vy
+	}
+}
+
+/**
+ * checks every collision with every skull to see if it collides with the player
+ * using checkRectangleCollision function
+ */
+function checkSkullPlayerCollisions(){
+
+	for(var i in skulls){
+		var skull = skulls[i];
+		if(checkRectangleCollision(player, skull)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+/**
+ * checks every collision with every lava tile to see if it collides with the player
+ * using checkRectangleCollision function
+ */
+function checkLavaPlayerCollisions(){
+
+	for(var i in lava_tiles){
+		var lava = lava_tiles[i];
+		if(checkRectangleCollision(player, lava)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+	Generates the floor tiles using random array
+*/
+function generateGroundTiles() {
+	ground_tiles.forEach( element => {
+		addTile( offset, element );
+		addEnemy();
+		offset += tile_size;
+	});
+}
+
+/**
+	Helper function that adds a random tile element to the stage
+*/
+function addTile( x, type ) {
+	var ground_tile = createTile( x, floor_position, tile_size, ground );
+	var lava_tile = createTile( x, floor_position, tile_size, lava );
+	
+	if ( type == 1 ) { game_stage.addChild( ground_tile ); } // adds a ground tile
+	
+	else { 
+		game_stage.addChild( lava_tile ); // adds a lava tile
+		lava_tiles.push( lava_tile );
+	} 
+}
+
+/**
 	Helper function that creates a tile
 */
 function createTile (x, y, size, sprite ) {
@@ -620,7 +539,12 @@ function clearStage () {
    delete master_stage;
 }
 
-
+/**
+	Helper function that returns a random number from 1 to max
+*/
+function getRand( max ) {
+	return Math.floor(( Math.random() * max ) + 1 );
+}
 
 /**
 	Helper function that returns a movie clip
@@ -641,28 +565,80 @@ function createMovieClip ( x, y, scale_x, scale_y, image, low, high ) {
   	return movie_clip;
 }
 
-function updateCamera() {
-	if ( player.position.x < ( end_of_map - 1000 ) ) { master_stage.x = -player.position.x; }
+/**
+	Helper function that adds enemies to the stage
+*/
+function addEnemy() {
+	var bat = createMovieClip( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), .75, .75, "bat", 1, 2 );
+	var tiny_skull = createSprite( getRand( end_of_map - tile_size ), getRand( ground_level - tile_size ), 1, 1, "flaming_skull.png" );
+	var randomize = getRand( 2 );
+	if ( randomize == 1 ) {
+		bat.anchor.x = 0;
+		bat.anchor.y = 0;
+		game_stage.addChild( bat );
+	}
 	
+	else {
+		tiny_skull.anchor.x = 0;
+		tiny_skull.anchor.y = 0;
+		game_stage.addChild( tiny_skull );
+
+	}
 }
 
+/**
+	Helper function that swaps the player sprite
+*/
+function swapPlayer ( x, y, scale_x, scale_y, image ) {
+	var temp_x = x;
+	var temp_y = y;
+	game_stage.removeChild( player );
+	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
+	game_stage.addChild( player );
+}
+
+/**
+	Helper function that creates a sprite
+*/
+function createSprite (x, y, scale_x, scale_y, image ) {
+	var sprite = new PIXI.Sprite( PIXI.Texture.from( image ) );
+	sprite.position.x = x;
+	sprite.position.y = y;
+	sprite.scale.x = scale_y;
+	sprite.scale.y = scale_x;
+	return sprite;
+}
+/**
+
+*/
+function createShape() {
+   var graphics = new PIXI.Graphics();
+   graphics.beginFill('0x000000');
+   graphics.drawRect(0, 0, 1000, 500);
+   graphics.endFill();
+   return graphics;
+}
+
+/**
+	Generates a random array for the floor tiles where no lava tiles are touching
+*/
 function generateFloorArray() {
 	var floor_array = [];
-	for ( var value = 0; value < 100; value++ ) {
+	for ( var value = 0; value < (end_of_map/tile_size); value++ ) {
 		if( value == 0 || (value >= 98)) {
 			floor_array.push( 1 );
 		}
-    else if ( floor_array[ value - 1] == 0 ){
-    		floor_array.push( 1 );
-    }
-    
-    else if ( getRand(5) == 1) { 
-    		floor_array.push( 1 );
-    }
-    
-    else {
-    	floor_array.push( 0 );
-    }
+		else if ( floor_array[ value - 1] == 0 ){
+				floor_array.push( 1 );
+		}
+		
+		else if ( getRand(5) == 1) { 
+				floor_array.push( 1 );
+		}
+		
+		else {
+			floor_array.push( 0 );
+		}
 	}
 	
 	return floor_array;
