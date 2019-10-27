@@ -14,7 +14,7 @@ PIXI.Loader.shared
 // Containers
 var master_stage = new PIXI.Container();
 var startScreen = new PIXI.Container();
-//var difficultyScreen = new PIXI.Container();
+var difficultyScreen = new PIXI.Container();
 var instructScreen = new PIXI.Container();
 var creditScreen = new PIXI.Container();
 var winScreen = new PIXI.Container();
@@ -150,14 +150,15 @@ function generateLevel() {
 	Builds the different screens of the game
 */
 function buildScreens() {
+   difficultyScreen.visible = false;
    instructScreen.visible = false;
    creditScreen.visible = false;
-   //difficultyScreen.visible = false;
    winScreen.visible = false;
    loseScreen.visible = false;
 
     // Text for titles
    var gameTitleText = new PIXI.Text( "Cave Escape!", titleStyle );
+   var gameDifficultyTitleText = new PIXI.Text( "Difficulty", titleStyle );
    var gameInstructTitleText = new PIXI.Text( "Instructions", titleStyle );
    var gameCreditTitleText = new PIXI.Text( "Credits", titleStyle );
    var gameWinText = new PIXI.Text( "Game over!\nYou win!", endStyle );
@@ -165,8 +166,12 @@ function buildScreens() {
 
    // Text for title screen options
    var gameStartText = new PIXI.Text( "Start", selectionStyle );
+   var calmModeText = new PIXI.Text( "Calm", selectionStyle );
+   var moodyModeText = new PIXI.Text( "Moody", selectionStyle );
+   var angryModeText = new PIXI.Text( "Angry", selectionStyle );
+   var spookyModeText = new PIXI.Text( "Spooky", selectionStyle ); 
    var gameInstructText = new PIXI.Text( "Instructions", selectionStyle );
-   var gameCredText = new PIXI.Text( "Credits", selectionStyle );
+   var gameCredText = new PIXI.Text( "Credits", selectionStyle );  
    var gameCredBackText = new PIXI.Text( "<- Back", backStyle );
    var gameInstructBackText = new PIXI.Text( "<- Back", backStyle );
    var gameRestartText = new PIXI.Text( "Play again", selectionStyle );
@@ -184,6 +189,10 @@ function buildScreens() {
 
    // Declare texts interactable
    gameStartText.interactive = true;
+   calmModeText.interactive = true;
+   moodyModeText.interactive = true;
+   angryModeText.interactive = true;
+   spookyModeText.interactive = true;
    gameInstructText.interactive = true;
    gameCredText.interactive = true;
    gameCredBackText.interactive = true;
@@ -195,7 +204,19 @@ function buildScreens() {
 
    
    // Declares interactable text functions
-   gameStartText.click = function(event) { startScreen.visible = false;
+   gameStartText.click = function(event) { difficultyScreen.visible = true;
+                                           startScreen.visible = false; }
+                                           
+   calmModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true; }
+                                           
+   moodyModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true; }
+                                           
+   angryModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true; }
+                                           
+   spookyModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true; }
                                            
    gameInstructText.click = function(event) { instructScreen.visible = true;
@@ -225,13 +246,31 @@ function buildScreens() {
                                                  loseScreen.visible = false; 
                                                  player.position.x = 0; 
                                                  winner = false; 
-                                                 generateLevel();
-                                                 master_stage.x = 0;}   
-
+                                                 generateLevel();}
+                                                 
+   gameLoseRestartText.click = function(event) { winScreen.visible = false;
+                                             loseScreen.visible = false; 
+                                             current_level = 0;
+                                             sound_check = 1;
+                                             player.position.x = 0;
+                                             game_active = true; 
+                                             winner = false;
+                                             generateLevel(); }
+                                             
+   gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
+                                                 current_level = 0;
+                                                 winScreen.visible = false;
+                                                 loseScreen.visible = false; 
+                                                 player.position.x = 0; 
+                                                 winner = false; 
+                                                 generateLevel(); }
+                           
+                                                 
    
    // Create background for screens screen
    var graphics = createShape();
    startScreen.addChild( graphics );
+   difficultyScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
    winScreen.addChild( createShape() );
@@ -242,6 +281,11 @@ function buildScreens() {
    startScreen.addChild( gameStartText );
    startScreen.addChild( gameInstructText );
    startScreen.addChild( gameCredText );
+   difficultyScreen.addChild( gameDifficultyTitleText );
+   difficultyScreen.addChild( calmModeText );
+   difficultyScreen.addChild( moodyModeText );
+   difficultyScreen.addChild( angryModeText );
+   difficultyScreen.addChild( spookyModeText );
    instructScreen.addChild( gameInstructTitleText );
    instructScreen.addChild( gameInstructDesc );
    instructScreen.addChild( gameInstructBackText );
@@ -254,10 +298,16 @@ function buildScreens() {
    loseScreen.addChild( gameLoseText );
    loseScreen.addChild( gameLoseRestartText );
    loseScreen.addChild( gameLoseReturnTitleText );
+
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
    gameStartText.anchor.set( .5 );
+   gameDifficultyTitleText.anchor.set( .5 );
+   calmModeText.anchor.set( .5 );
+   moodyModeText.anchor.set( .5 );
+   angryModeText.anchor.set( .5 );
+   spookyModeText.anchor.set( .5 );
    gameInstructText.anchor.set( .5 );
    gameCredText.anchor.set( .5 );
    gameInstructTitleText.anchor.set( .5 );
@@ -274,6 +324,11 @@ function buildScreens() {
    // Place Text
    gameTitleText.x = renderer.width/2; gameTitleText.y = renderer.height/4;
    gameStartText.x = renderer.width/6; gameStartText.y = renderer.height/4 * 3;
+   gameDifficultyTitleText.x = renderer.width/2; gameDifficultyTitleText.y = renderer.height/4;
+   calmModeText.x = renderer.width/8; calmModeText.y = renderer.height/4 * 3;
+   moodyModeText.x = renderer.width/8 * 3; moodyModeText.y = renderer.height/4 * 3;
+   angryModeText.x = renderer.width/8 * 5; angryModeText.y = renderer.height/4 * 3;
+   spookyModeText.x = renderer.width/8 * 7; spookyModeText.y = renderer.height/4 * 3;
    gameInstructText.x = renderer.width/2 ; gameInstructText.y = renderer.height/4 * 3;
    gameCredText.x = renderer.width/6 * 5; gameCredText.y = renderer.height/4 * 3;
    gameInstructTitleText.x = renderer.width/2; gameInstructTitleText.y = renderer.height/4;
@@ -288,12 +343,14 @@ function buildScreens() {
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
    gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
    gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
+
    
    master_stage.addChild( startScreen );
+   master_stage.addChild( difficultyScreen );
    master_stage.addChild( instructScreen );
    master_stage.addChild( creditScreen );
    master_stage.addChild( winScreen );
-   master_stage.addChild( loseScreen )
+   master_stage.addChild( loseScreen );
    winScreen.x = end_goal - 950;
 }
 
