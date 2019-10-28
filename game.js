@@ -247,7 +247,6 @@ function buildScreens() {
                                                   
    gameRestartText.click = function(event) { winScreen.visible = false;
                                              loseScreen.visible = false; 
-                                             //current_level = 0;
                                              sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
@@ -255,7 +254,6 @@ function buildScreens() {
                                              generateLevel(); }
                                              
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 //current_level = 0;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
                                                  player.position.x = 0; 
@@ -264,7 +262,6 @@ function buildScreens() {
                                                  
    gameLoseRestartText.click = function(event) { winScreen.visible = false;
                                              loseScreen.visible = false; 
-                                             //current_level = 0;
                                              sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
@@ -272,7 +269,6 @@ function buildScreens() {
                                              generateLevel(); }
                                              
    gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 //current_level = 0;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
                                                  player.position.x = 0; 
