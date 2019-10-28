@@ -14,7 +14,7 @@ PIXI.Loader.shared
 // Containers
 var master_stage = new PIXI.Container();
 var startScreen = new PIXI.Container();
-//var difficultyScreen = new PIXI.Container();
+var difficultyScreen = new PIXI.Container();
 var instructScreen = new PIXI.Container();
 var creditScreen = new PIXI.Container();
 var winScreen = new PIXI.Container();
@@ -32,9 +32,9 @@ var goal;
 var dash;
 var burny_stuff;
 var music;
-var skulls = [];
-var ground_tiles = [];
-var lava_tiles = [];
+var skulls;
+var ground_tiles;
+var lava_tiles;
 var winner = false;
 var game_active = false;
 
@@ -45,7 +45,7 @@ var floor_position = 470;
 var tile_size = 50;
 var count = 2;
 var offset = 0;
-var current_level = 1;
+var current_level = 0;
 var end_goal = end_of_map - 100;
 var back_space = 999;
 var sound_check = 1;
@@ -91,13 +91,19 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 	Initializes the Game Elements
 */
 function generateLevel() {
+
 	// Setup Game Elements
-	clearStage ();
+	clearStage();
 	current_level++;
 	sound_chek = 1;
 	offset = 0;
-	game_mode = calm;
+	ground_tiles = [];
+	skulls = [];
+	lava_tiles = [];
 
+	player = createSprite( 0, ground_level, 1, 1, "player1.png");
+	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
+	
 	// Set up sound elements
 	dash = PIXI.sound.Sound.from("ninja.mp3");
 	burny_stuff = PIXI.sound.Sound.from("it_burns.mp3");
@@ -106,7 +112,8 @@ function generateLevel() {
 	// Set up Background	
 	generateBackground();
 	game_stage.addChild( back );
-
+	
+	if ( current_level > 1 ) {
 	// Generate Floor Tiles
 	ground = new PIXI.Texture.from( "groundtile.png" );
 	lava = new PIXI.Texture.from( "lavatile.png" );
@@ -114,11 +121,11 @@ function generateLevel() {
 	generateGroundTiles();
 
 	// Set up End goal
-	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
+	
 	game_stage.addChild( goal );
 
 	// Set up Player
-	player = createSprite( 0, ground_level, 1, 1, "player1.png");
+	
 	player.interactive = true;
 	game_stage.addChild( player );
 	
@@ -139,10 +146,9 @@ function generateLevel() {
 			createSkulls(getRand(25));
 			break;
 	}
-	
-	master_stage.addChild( game_stage );
-	buildScreens();
-	
+	}
+	master_stage.addChild( game_stage );	
+	buildScreens();	
 	update();
 }
 
@@ -150,14 +156,15 @@ function generateLevel() {
 	Builds the different screens of the game
 */
 function buildScreens() {
+   difficultyScreen.visible = false;
    instructScreen.visible = false;
    creditScreen.visible = false;
-   //difficultyScreen.visible = false;
    winScreen.visible = false;
    loseScreen.visible = false;
 
     // Text for titles
    var gameTitleText = new PIXI.Text( "Cave Escape!", titleStyle );
+   var gameDifficultyTitleText = new PIXI.Text( "Difficulty", titleStyle );
    var gameInstructTitleText = new PIXI.Text( "Instructions", titleStyle );
    var gameCreditTitleText = new PIXI.Text( "Credits", titleStyle );
    var gameWinText = new PIXI.Text( "Game over!\nYou win!", endStyle );
@@ -165,8 +172,12 @@ function buildScreens() {
 
    // Text for title screen options
    var gameStartText = new PIXI.Text( "Start", selectionStyle );
+   var calmModeText = new PIXI.Text( "Calm", selectionStyle );
+   var moodyModeText = new PIXI.Text( "Moody", selectionStyle );
+   var angryModeText = new PIXI.Text( "Angry", selectionStyle );
+   var spookyModeText = new PIXI.Text( "Spooky", selectionStyle ); 
    var gameInstructText = new PIXI.Text( "Instructions", selectionStyle );
-   var gameCredText = new PIXI.Text( "Credits", selectionStyle );
+   var gameCredText = new PIXI.Text( "Credits", selectionStyle );  
    var gameCredBackText = new PIXI.Text( "<- Back", backStyle );
    var gameInstructBackText = new PIXI.Text( "<- Back", backStyle );
    var gameRestartText = new PIXI.Text( "Play again", selectionStyle );
@@ -184,6 +195,10 @@ function buildScreens() {
 
    // Declare texts interactable
    gameStartText.interactive = true;
+   calmModeText.interactive = true;
+   moodyModeText.interactive = true;
+   angryModeText.interactive = true;
+   spookyModeText.interactive = true;
    gameInstructText.interactive = true;
    gameCredText.interactive = true;
    gameCredBackText.interactive = true;
@@ -195,55 +210,81 @@ function buildScreens() {
 
    
    // Declares interactable text functions
-   gameStartText.click = function(event) { startScreen.visible = false;
-					   game_active = true; }
+   gameStartText.click = function(event) { difficultyScreen.visible = true;
+                                           startScreen.visible = false; }
+                                           
+   calmModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true;
+                                           game_mode = calm;
+					   generateLevel(); }
+                                           
+   moodyModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true;
+                                           game_mode = moody;
+					   generateLevel(); }
+                                           
+   angryModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true;
+                                           game_mode = angry;
+					   generateLevel(); }
+                                           
+   spookyModeText.click = function(event) { difficultyScreen.visible = false;
+                                           game_active = true; 
+                                           game_mode = spooky;
+					   generateLevel(); }
+                                           
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
+                                              
    gameCredText.click = function(event) { creditScreen.visible = true;
                                           startScreen.visible = false; }
+                                          
    gameCredBackText.click = function(event) { startScreen.visible = true;
                                               creditScreen.visible = false; }
+                                              
    gameInstructBackText.click = function(event) { startScreen.visible = true;
                                                   instructScreen.visible = false; }
+                                                  
    gameRestartText.click = function(event) { winScreen.visible = false;
-					     loseScreen.visible = false; 
-                                             current_level = 0;
-					     sound_check = 1;
+                                             loseScreen.visible = false; 
+                                             //current_level = 0;
+                                             sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
-                                             winner = false; 
+                                             winner = false;
                                              generateLevel(); }
+                                             
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 current_level = 0;
-												 winScreen.visible = false;
-												 loseScreen.visible = false; 
+                                                 //current_level = 0;
+                                                 winScreen.visible = false;
+                                                 loseScreen.visible = false; 
                                                  player.position.x = 0; 
-                                                 generateLevel();
                                                  winner = false; 
-                                                 master_stage.x = 0;}
-
-  gameLoseRestartText.click = function(event) { winScreen.visible = false;
-					     loseScreen.visible = false; 
-                                             current_level = 0;
-					     sound_check = 1;
+                                                 generateLevel();}
+                                                 
+   gameLoseRestartText.click = function(event) { winScreen.visible = false;
+                                             loseScreen.visible = false; 
+                                             //current_level = 0;
+                                             sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
-                                             winner = false; 
+                                             winner = false;
                                              generateLevel(); }
+                                             
    gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 current_level = 0;
-												 winScreen.visible = false;
-												 loseScreen.visible = false; 
+                                                 //current_level = 0;
+                                                 winScreen.visible = false;
+                                                 loseScreen.visible = false; 
                                                  player.position.x = 0; 
-                                                 generateLevel();
                                                  winner = false; 
-                                                 master_stage.x = 0;}
-   
-
+                                                 generateLevel(); }
+                           
+                                                 
    
    // Create background for screens screen
    var graphics = createShape();
    startScreen.addChild( graphics );
+   difficultyScreen.addChild( graphics );
    instructScreen.addChild( graphics );
    creditScreen.addChild( graphics );
    winScreen.addChild( createShape() );
@@ -254,6 +295,11 @@ function buildScreens() {
    startScreen.addChild( gameStartText );
    startScreen.addChild( gameInstructText );
    startScreen.addChild( gameCredText );
+   difficultyScreen.addChild( gameDifficultyTitleText );
+   difficultyScreen.addChild( calmModeText );
+   difficultyScreen.addChild( moodyModeText );
+   difficultyScreen.addChild( angryModeText );
+   difficultyScreen.addChild( spookyModeText );
    instructScreen.addChild( gameInstructTitleText );
    instructScreen.addChild( gameInstructDesc );
    instructScreen.addChild( gameInstructBackText );
@@ -267,11 +313,14 @@ function buildScreens() {
    loseScreen.addChild( gameLoseRestartText );
    loseScreen.addChild( gameLoseReturnTitleText );
    
-
-   
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
    gameStartText.anchor.set( .5 );
+   gameDifficultyTitleText.anchor.set( .5 );
+   calmModeText.anchor.set( .5 );
+   moodyModeText.anchor.set( .5 );
+   angryModeText.anchor.set( .5 );
+   spookyModeText.anchor.set( .5 );
    gameInstructText.anchor.set( .5 );
    gameCredText.anchor.set( .5 );
    gameInstructTitleText.anchor.set( .5 );
@@ -284,11 +333,14 @@ function buildScreens() {
    gameLoseRestartText.anchor.set( .5 );
    gameLoseReturnTitleText.anchor.set( .5 );
 
-
-
    // Place Text
    gameTitleText.x = renderer.width/2; gameTitleText.y = renderer.height/4;
    gameStartText.x = renderer.width/6; gameStartText.y = renderer.height/4 * 3;
+   gameDifficultyTitleText.x = renderer.width/2; gameDifficultyTitleText.y = renderer.height/4;
+   calmModeText.x = renderer.width/8; calmModeText.y = renderer.height/4 * 3;
+   moodyModeText.x = renderer.width/8 * 3; moodyModeText.y = renderer.height/4 * 3;
+   angryModeText.x = renderer.width/8 * 5; angryModeText.y = renderer.height/4 * 3;
+   spookyModeText.x = renderer.width/8 * 7; spookyModeText.y = renderer.height/4 * 3;
    gameInstructText.x = renderer.width/2 ; gameInstructText.y = renderer.height/4 * 3;
    gameCredText.x = renderer.width/6 * 5; gameCredText.y = renderer.height/4 * 3;
    gameInstructTitleText.x = renderer.width/2; gameInstructTitleText.y = renderer.height/4;
@@ -303,13 +355,14 @@ function buildScreens() {
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
    gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
    gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
-
    
+   // Add screens to stage
    master_stage.addChild( startScreen );
+   master_stage.addChild( difficultyScreen );
    master_stage.addChild( instructScreen );
    master_stage.addChild( creditScreen );
    master_stage.addChild( winScreen );
-   master_stage.addChild( loseScreen )
+   master_stage.addChild( loseScreen );
    winScreen.x = end_goal - 950;
 }
 
@@ -326,9 +379,7 @@ function updateCamera() {
 */
 function update() {
  
-      //document.addEventListener( 'keydown', keydownEventHandler );
       // Updates the player status
-	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	
 	//if the player is hit by a skull or lava tile the game is over
@@ -347,7 +398,7 @@ function update() {
 	updateCamera();
    if( game_active ) { 
 	document.addEventListener( 'keydown', keydownEventHandler );
-	music.play();
+	//music.play();
    }
    else { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
@@ -400,13 +451,14 @@ function checkRectangleCollision(object, otherObject){
 	Event Handler for Key events
 */
 function keydownEventHandler(event) {
+   event.preventDefault();
   	if ( event.keyCode == 68 ) { // D key
 		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 	
-	if ( event.keyCode == 70 ) { // F key
-		swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png");
+	if ( event.keyCode == 32 ) { // space bar
+		swapPlayer( player.position.x + (2 * tile_size), player.position.y, 1, 1, "player1.png");
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 
@@ -560,14 +612,10 @@ function createTile (x, y, size, sprite ) {
 	Helper function that clears the stage
 */
 function clearStage () {
-   for (var i = startScreen.children.length - 1; i >= 0; i--) { startScreen.removeChild(startScreen.children[i]);};
-   for (var i = instructScreen.children.length - 1; i >= 0; i--) { instructScreen.removeChild(instructScreen.children[i]);};
-   for (var i = creditScreen.children.length - 1; i >= 0; i--) { creditScreen.removeChild(creditScreen.children[i]);};
-   for (var i = winScreen.children.length - 1; i >= 0; i--) { winScreen.removeChild(winScreen.children[i]);};
-   for (var i = back.children.length - 1; i >= 0; i--) { back.removeChild(back.children[i]);};
-   for (var i = game_stage.children.length - 1; i >= 0; i--) { game_stage.removeChild(game_stage.children[i]);};
-   for (var i = master_stage.children.length - 1; i >= 0; i--) { master_stage.removeChild(master_stage.children[i]);};
-   delete master_stage;
+   while(game_stage.children[0]) 
+   {
+      game_stage.removeChild(game_stage.children[0]); 
+   }
 }
 
 /**
@@ -640,7 +688,6 @@ function createSprite (x, y, scale_x, scale_y, image ) {
 	return sprite;
 }
 /**
-
 */
 function createShape() {
    var graphics = new PIXI.Graphics();
