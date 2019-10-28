@@ -274,8 +274,8 @@ function buildScreens() {
                                                  generateLevel();}
                                                  
    gameLoseRestartText.click = function(event) { winScreen.visible = false;
-                                             loseScreen.visible = false;
-					     sound_check = 1;
+                                             loseScreen.visible = false; 
+                                             sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
                                              winner = false;
