@@ -92,11 +92,10 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 */
 function generateLevel() {
 	// Setup Game Elements
-	clearStage ();
+	clearStage();
 	current_level++;
 	sound_chek = 1;
 	offset = 0;
-	game_mode = calm;
 
 	// Set up sound elements
 	dash = PIXI.sound.Sound.from("ninja.mp3");
@@ -208,16 +207,20 @@ function buildScreens() {
                                            startScreen.visible = false; }
                                            
    calmModeText.click = function(event) { difficultyScreen.visible = false;
-                                           game_active = true; }
+                                           game_active = true;
+                                           game_mode = calm;}
                                            
    moodyModeText.click = function(event) { difficultyScreen.visible = false;
-                                           game_active = true; }
+                                           game_active = true;
+                                           game_mode = moody; }
                                            
    angryModeText.click = function(event) { difficultyScreen.visible = false;
-                                           game_active = true; }
+                                           game_active = true;
+                                           game_mode = angry; }
                                            
    spookyModeText.click = function(event) { difficultyScreen.visible = false;
-                                           game_active = true; }
+                                           game_active = true; 
+                                           game_mode = spooky; }
                                            
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
@@ -298,7 +301,6 @@ function buildScreens() {
    loseScreen.addChild( gameLoseText );
    loseScreen.addChild( gameLoseRestartText );
    loseScreen.addChild( gameLoseReturnTitleText );
-
    
    // Set anchors for text
    gameTitleText.anchor.set( .5 );
@@ -319,7 +321,6 @@ function buildScreens() {
    gameReturnTitleText.anchor.set( .5 );
    gameLoseRestartText.anchor.set( .5 );
    gameLoseReturnTitleText.anchor.set( .5 );
-
 
    // Place Text
    gameTitleText.x = renderer.width/2; gameTitleText.y = renderer.height/4;
@@ -343,8 +344,8 @@ function buildScreens() {
    gameReturnTitleText.x = renderer.width/2; gameReturnTitleText.y = renderer.height/2 + 100;
    gameLoseRestartText.x = renderer.width/2; gameLoseRestartText.y = renderer.height/2 + 50;
    gameLoseReturnTitleText.x = renderer.width/2; gameLoseReturnTitleText.y = renderer.height/2 + 100;
-
    
+   // Add screens to stage
    master_stage.addChild( startScreen );
    master_stage.addChild( difficultyScreen );
    master_stage.addChild( instructScreen );
@@ -604,7 +605,7 @@ function createTile (x, y, size, sprite ) {
 function clearStage () {
    while(game_stage.children[0]) 
    {
-      stage[0].destroy(true); 
+      game_stage.removeChild(game_stage.children[0]); 
    }
 }
 
