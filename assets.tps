@@ -183,6 +183,7 @@
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">spritesheet_assets/bat1.png</key>
             <key type="filename">spritesheet_assets/bat2.png</key>
+            <key type="filename">spritesheet_assets/ghost.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -213,6 +214,8 @@
             <key type="filename">spritesheet_assets/laughing_skull2.png</key>
             <key type="filename">spritesheet_assets/player1.png</key>
             <key type="filename">spritesheet_assets/player2.png</key>
+            <key type="filename">spritesheet_assets/spoopy_player1.png</key>
+            <key type="filename">spritesheet_assets/spoopy_player2.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -222,6 +225,24 @@
                 <rect>13,13,25,25</rect>
                 <key>scale9Paddings</key>
                 <rect>13,13,25,25</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">spritesheet_assets/filter1.png</key>
+            <key type="filename">spritesheet_assets/filter2.png</key>
+            <key type="filename">spritesheet_assets/filter3.png</key>
+            <key type="filename">spritesheet_assets/filter4.png</key>
+            <key type="filename">spritesheet_assets/filter5.png</key>
+            <key type="filename">spritesheet_assets/filter6.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,13,50,25</rect>
+                <key>scale9Paddings</key>
+                <rect>25,13,50,25</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -260,12 +281,21 @@
             <filename>spritesheet_assets/laughing_skull2.png</filename>
             <filename>spritesheet_assets/lavatile.png</filename>
             <filename>spritesheet_assets/player1.png</filename>
-            <filename>spritesheet_assets/player2.png</filename>
+            <filename>spritesheet_assets/spoopy_player1.png</filename>
+            <filename>spritesheet_assets/spoopy_player2.png</filename>
             <filename>spritesheet_assets/bat1.png</filename>
             <filename>spritesheet_assets/bat2.png</filename>
             <filename>spritesheet_assets/cave_background.png</filename>
             <filename>spritesheet_assets/door.png</filename>
             <filename>spritesheet_assets/flaming_skull.png</filename>
+            <filename>spritesheet_assets/ghost.png</filename>
+            <filename>spritesheet_assets/filter1.png</filename>
+            <filename>spritesheet_assets/filter2.png</filename>
+            <filename>spritesheet_assets/filter3.png</filename>
+            <filename>spritesheet_assets/filter4.png</filename>
+            <filename>spritesheet_assets/filter5.png</filename>
+            <filename>spritesheet_assets/filter6.png</filename>
+            <filename>spritesheet_assets/player2.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
