@@ -32,9 +32,9 @@ var goal;
 var dash;
 var burny_stuff;
 var music;
-var skulls = [];
-var ground_tiles = [];
-var lava_tiles = [];
+var skulls;
+var ground_tiles;
+var lava_tiles;
 var winner = false;
 var game_active = false;
 
@@ -45,7 +45,7 @@ var floor_position = 470;
 var tile_size = 50;
 var count = 2;
 var offset = 0;
-var current_level = 1;
+var current_level = 0;
 var end_goal = end_of_map - 100;
 var back_space = 999;
 var sound_check = 1;
@@ -91,12 +91,19 @@ const endStyle = new PIXI.TextStyle({ fontSize: 50,
 	Initializes the Game Elements
 */
 function generateLevel() {
+
 	// Setup Game Elements
 	clearStage();
 	current_level++;
 	sound_chek = 1;
 	offset = 0;
+	ground_tiles = [];
+	skulls = [];
+	lava_tiles = [];
 
+	player = createSprite( 0, ground_level, 1, 1, "player1.png");
+	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
+	
 	// Set up sound elements
 	dash = PIXI.sound.Sound.from("ninja.mp3");
 	burny_stuff = PIXI.sound.Sound.from("it_burns.mp3");
@@ -105,7 +112,8 @@ function generateLevel() {
 	// Set up Background	
 	generateBackground();
 	game_stage.addChild( back );
-
+	
+	if ( current_level > 1 ) {
 	// Generate Floor Tiles
 	ground = new PIXI.Texture.from( "groundtile.png" );
 	lava = new PIXI.Texture.from( "lavatile.png" );
@@ -113,11 +121,11 @@ function generateLevel() {
 	generateGroundTiles();
 
 	// Set up End goal
-	goal = createSprite( end_goal, ground_level, 1, 1, "door.png" );
+	
 	game_stage.addChild( goal );
 
 	// Set up Player
-	player = createSprite( 0, ground_level, 1, 1, "player1.png");
+	
 	player.interactive = true;
 	game_stage.addChild( player );
 	
@@ -138,10 +146,9 @@ function generateLevel() {
 			createSkulls(getRand(25));
 			break;
 	}
-	
-	master_stage.addChild( game_stage );
-	buildScreens();
-	
+	}
+	master_stage.addChild( game_stage );	
+	buildScreens();	
 	update();
 }
 
@@ -208,19 +215,23 @@ function buildScreens() {
                                            
    calmModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
-                                           game_mode = calm;}
+                                           game_mode = calm;
+					   generateLevel(); }
                                            
    moodyModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
-                                           game_mode = moody; }
+                                           game_mode = moody;
+					   generateLevel(); }
                                            
    angryModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
-                                           game_mode = angry; }
+                                           game_mode = angry;
+					   generateLevel(); }
                                            
    spookyModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true; 
-                                           game_mode = spooky; }
+                                           game_mode = spooky;
+					   generateLevel(); }
                                            
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
@@ -236,7 +247,6 @@ function buildScreens() {
                                                   
    gameRestartText.click = function(event) { winScreen.visible = false;
                                              loseScreen.visible = false; 
-                                             current_level = 0;
                                              sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
@@ -244,7 +254,6 @@ function buildScreens() {
                                              generateLevel(); }
                                              
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 current_level = 0;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
                                                  player.position.x = 0; 
@@ -253,7 +262,6 @@ function buildScreens() {
                                                  
    gameLoseRestartText.click = function(event) { winScreen.visible = false;
                                              loseScreen.visible = false; 
-                                             current_level = 0;
                                              sound_check = 1;
                                              player.position.x = 0;
                                              game_active = true; 
@@ -261,7 +269,6 @@ function buildScreens() {
                                              generateLevel(); }
                                              
    gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
-                                                 current_level = 0;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
                                                  player.position.x = 0; 
@@ -368,9 +375,7 @@ function updateCamera() {
 */
 function update() {
  
-      //document.addEventListener( 'keydown', keydownEventHandler );
       // Updates the player status
-	if ( player.position.y < ground_level ) { movePlayer( player.position.x + ( tile_size/2 ), ground_level ); } // fix y position
 	if ( !winner ) { checkWinCondition(); } // checks for win condition
 	
 	//if the player is hit by a skull or lava tile the game is over
@@ -389,7 +394,7 @@ function update() {
 	updateCamera();
    if( game_active ) { 
 	document.addEventListener( 'keydown', keydownEventHandler );
-	music.play();
+	//music.play();
    }
    else { document.removeEventListener( 'keydown', keydownEventHandler ); }
 
@@ -679,7 +684,6 @@ function createSprite (x, y, scale_x, scale_y, image ) {
 	return sprite;
 }
 /**
-
 */
 function createShape() {
    var graphics = new PIXI.Graphics();
