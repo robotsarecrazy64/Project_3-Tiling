@@ -227,22 +227,22 @@ function buildScreens() {
    calmModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
                                            game_mode = calm;
-					   generateLevel(); }
+                                           generateLevel(); }
                                            
    moodyModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
                                            game_mode = moody;
-					   generateLevel(); }
+                                           generateLevel(); }
                                            
    angryModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true;
                                            game_mode = angry;
-					   generateLevel(); }
-                                           
+                                           generateLevel(); }
+                                             
    spookyModeText.click = function(event) { difficultyScreen.visible = false;
                                            game_active = true; 
                                            game_mode = spooky;
-					   generateLevel(); }
+                                           generateLevel(); }
                                            
    gameInstructText.click = function(event) { instructScreen.visible = true;
                                               startScreen.visible = false; }
@@ -267,11 +267,10 @@ function buildScreens() {
    gameReturnTitleText.click = function(event) { startScreen.visible = true;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
-						 sound_check = 1;
+						                                     sound_check = 1;
                                                  player.position.x = 0;
                                                  winner = false;
-						 game_mode = 1;
-                                                 generateLevel();}
+						                                     game_mode = 1; }
                                                  
    gameLoseRestartText.click = function(event) { winScreen.visible = false;
                                              loseScreen.visible = false; 
@@ -284,13 +283,11 @@ function buildScreens() {
    gameLoseReturnTitleText.click = function(event) { startScreen.visible = true;
                                                  winScreen.visible = false;
                                                  loseScreen.visible = false; 
-						 sound_check = 1;
-                                                 player.position.x = 0; 
+						 						 						 						 sound_check = 1;
+                                                 player.position.x = 0;
                                                  winner = false;
-						 game_mode = 1;
-                                                 generateLevel(); }
-                           
-                                                 
+						                                     game_mode = 1; }
+    
    
    // Create background for screens screen
    var graphics = createShape();
@@ -463,8 +460,17 @@ function checkRectangleCollision(object, otherObject){
 	Event Handler for Key events
 */
 function keydownEventHandler(event) {
-   event.preventDefault();
   	if ( event.keyCode == 68 ) { // D key
+    event.preventDefault();
+		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
+  	}
+	
+	if ( event.keyCode == 32 ) { // space bar
+    event.preventDefault();
+		swapPlayer( player.position.x + (2 * tile_size), player.position.y, 1, 1, "player1.png");
+		dash.play(); 
+		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 		if ( game_mode == spooky ) { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
 		else { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png"); }
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x; }
@@ -481,6 +487,9 @@ function keydownEventHandler(event) {
 	}
 
   	if ( event.keyCode == 65 ) { // A key
+    event.preventDefault();
+		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
+		if( player.position.x < 0) {player.position.x = 0;}
 		if ( game_mode == spooky ) { swapPlayer( player.position.x - (tile_size), player.position.y, 1, 1, "spoopy_player2.png"); }
 		else { swapPlayer( player.position.x - (tile_size), player.position.y, 1, 1, "player2.png"); }
 		if( player.position.x < 0) { player.position.x = 0; }
@@ -700,12 +709,15 @@ function addEnemy() {
 /**
 	Helper function that swaps the player sprite
 */
-function swapPlayer ( x, y, scale_x, scale_y, image ) {
-	var temp_x = x;
-	var temp_y = y;
-	game_stage.removeChild( player );
+function swapPlayer ( temp_x, temp_y, scale_x, scale_y, image ) {
+   game_stage.removeChild( player );
 	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
 	game_stage.addChild( player );
+   var xHalfTween = temp_x - ( tile_size / 2 );
+   createjs.Tween.get( player.position ).to( { x: xHalfTween, y: temp_y - 25 }, 100, createjs.Ease.sineOut);
+   setTimeout( function() { 
+      createjs.Tween.get( player.position ).to( { x: temp_x, y: temp_y }, 100, createjs.Ease.sineIn); 
+      }, 101 );
 }
 
 /**
