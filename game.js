@@ -464,6 +464,7 @@ function checkRectangleCollision(object, otherObject){
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
     event.preventDefault();
+
 		if ( game_mode == spooky ) { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
 		else { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png"); }
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
@@ -693,7 +694,6 @@ function addEnemy() {
 	Helper function that swaps the player sprite
 */
 function swapPlayer ( temp_x, temp_y, scale_x, scale_y, image ) {
-   
    game_stage.removeChild( player );
 	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
 	game_stage.addChild( player );
