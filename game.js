@@ -468,23 +468,12 @@ function keydownEventHandler(event) {
 	
 	if ( event.keyCode == 32 ) { // space bar
     event.preventDefault();
-		swapPlayer( player.position.x + (2 * tile_size), player.position.y, 1, 1, "player1.png");
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
 		if ( game_mode == spooky ) { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
-		else { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png"); }
+		else { swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png"); }
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x; }
   	}
-	
-	if ( event.keyCode == 32 ) { // space bar
-		if ( game_mode == spooky ) { swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
-		else { swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png"); }
-
-		dash.play();
-
-		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x; }
-
-	}
 
   	if ( event.keyCode == 65 ) { // A key
     event.preventDefault();
