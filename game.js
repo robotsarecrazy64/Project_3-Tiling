@@ -178,8 +178,8 @@ function buildScreens() {
    var gameDifficultyTitleText = new PIXI.Text( "Difficulty", titleStyle );
    var gameInstructTitleText = new PIXI.Text( "Instructions", titleStyle );
    var gameCreditTitleText = new PIXI.Text( "Credits", titleStyle );
-   var gameWinText = new PIXI.Text( "Game over!\nYou win!", endStyle );
-   var gameLoseText = new PIXI.Text("Game over!\nThe skulls of the cave overtake you.", endStyle);
+   var gameWinText = new PIXI.Text( "Game over!\nCongratulations\n You have successfully escaped the cave!", endStyle );
+   var gameLoseText = new PIXI.Text("                     Game over!\n                   You have fallen.", endStyle);
 
    // Text for title screen options
    var gameStartText = new PIXI.Text( "Start", selectionStyle );
@@ -199,7 +199,7 @@ function buildScreens() {
    
    // Adds regular text
    var gameInstructDesc = new PIXI.Text( "The goal of the game is to navigate the cave and" + 
-      " make it\nto the end! The character is moved using the A and D keys to move forward and backward and the space key to dash forward two spaces.\n\nMove the character" + 
+      " make it\nto the end! The character is moved using the D key \n to move forward one space and the SPACE key to dash \n forward two spaces to avoid dangerous tiles.\n\nMove the character" + 
       " to the end of the cave to win.", selectionStyle );
    var gameCredDesc = new PIXI.Text( "Authors: John Jacobelli\nJesse Rodriguez\nTyler Pehringer\nDarius Dumel\n\nRenderer used: PixiJS", 
       selectionStyle );
@@ -397,9 +397,11 @@ function update() {
 				else { burny_stuff.play(); }
 				sound_check--;
 			}
+			
+			game_active = false;
+			generateLevel();
 			loseScreen.x = player.x;
 			loseScreen.visible = true;
-			game_active = false;
 
 	};
 	animateSkulls();
@@ -462,7 +464,9 @@ function checkRectangleCollision(object, otherObject){
 function keydownEventHandler(event) {
   	if ( event.keyCode == 68 ) { // D key
     event.preventDefault();
-		swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png");
+
+		if ( game_mode == spooky ) { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
+		else { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "player1.png"); }
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
   	}
 	
@@ -470,18 +474,9 @@ function keydownEventHandler(event) {
     event.preventDefault();
 		dash.play(); 
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x;}
-		if ( game_mode == spooky ) { swapPlayer( player.position.x + (tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
+		if ( game_mode == spooky ) { swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "spoopy_player1.png"); }
 		else { swapPlayer( player.position.x + (2*tile_size), player.position.y, 1, 1, "player1.png"); }
 		if ( ( player.position.x > goal.x ) ) { player.position.x == goal.x; }
-  	}
-
-  	if ( event.keyCode == 65 ) { // A key
-    event.preventDefault();
-		swapPlayer( player.position.x - tile_size, player.position.y, 1, 1, "player2.png");
-		if( player.position.x < 0) {player.position.x = 0;}
-		if ( game_mode == spooky ) { swapPlayer( player.position.x - (tile_size), player.position.y, 1, 1, "spoopy_player2.png"); }
-		else { swapPlayer( player.position.x - (tile_size), player.position.y, 1, 1, "player2.png"); }
-		if( player.position.x < 0) { player.position.x = 0; }
   	}
 }
 
@@ -703,6 +698,7 @@ function swapPlayer ( temp_x, temp_y, scale_x, scale_y, image ) {
 	player = createSprite( temp_x, temp_y, scale_x, scale_y, image );
 	game_stage.addChild( player );
    var xHalfTween = temp_x - ( tile_size / 2 );
+   if( player.position.x < 0) { player.position.x = 0; }
    createjs.Tween.get( player.position ).to( { x: xHalfTween, y: temp_y - 25 }, 100, createjs.Ease.sineOut);
    setTimeout( function() { 
       createjs.Tween.get( player.position ).to( { x: temp_x, y: temp_y }, 100, createjs.Ease.sineIn); 
@@ -725,7 +721,7 @@ function createSprite (x, y, scale_x, scale_y, image ) {
 function createShape() {
    var graphics = new PIXI.Graphics();
    graphics.beginFill('0x000000');
-   graphics.drawRect(0, 0, 1050, 500);
+   graphics.drawRect(0, 0, 1100, 500);
    graphics.endFill();
    return graphics;
 }
